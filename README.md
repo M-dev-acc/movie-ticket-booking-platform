@@ -1,0 +1,2 @@
+# movie-ticket-booking-platform
+(In development) A franchise-based movie ticket booking platform built with Laravel, Vue.js, and PostgreSQL. It features admin and employee modules, real-time seat selection, showtime management, and AI-powered movie recommendations—designed for multi-location cinemas to streamline operations and enhance user experience. 
