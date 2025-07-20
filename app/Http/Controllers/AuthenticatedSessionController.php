@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
                 'message' => "Please enter valid password."
             ], 401);
         }
-        
+
         $token = $user->createToken($user->name)->plainTextToken;
         return response()->json([
             'status' => true,
@@ -47,12 +47,14 @@ class AuthenticatedSessionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request):Response
+    public function destroy(Request $request):JsonResponse
     {
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return response()->noContent();
+        $request->user()->currentAccessToken()->destroy();
+        
+        return response()->json([
+            'status' => true,
+            'data' => [],
+            'message' => "Successfully logout!"
+        ], 200);;
     }
 }
