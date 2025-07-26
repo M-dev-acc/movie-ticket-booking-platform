@@ -22,17 +22,20 @@ Route::group([
     ], function () {
         Route::get('/', fn() => response()->json([
             'status' => true,
+            'data' => auth()->user()->toArray(), 
             'message' => "I am in the zone!!!"
         ]));
 
-        Route::group([
-            'prefix' => "theater"
-        ], function () {
-            Route::get('/', [TheaterController::class, 'index']);
-            Route::post('/create', [TheaterController::class, 'store'])->middleware('permission:create theater');
-            Route::patch('/update/{id}', [TheaterController::class, 'update'])->middleware('permission:update theater');
-            Route::delete('/delete/{id}', [TheaterController::class, 'destroy'])->middleware('permission:delete theater');
+        Route::controller(TheaterController::class)
+        ->prefix('theater')
+        ->group(function () {
+            Route::get('/', 'index');
+            Route::get('/{id}', 'show');
+            Route::post('/create', 'store')->middleware('permission:create theater');
+            Route::patch('/update/{id}', 'update')->middleware('permission:update theater');
+            Route::delete('/delete/{id}',  'destroy')->middleware('permission:delete theater');
         });
+
     });
 
     Route::group([

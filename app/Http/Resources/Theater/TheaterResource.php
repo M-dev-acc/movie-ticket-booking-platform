@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Theater;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,12 @@ class TheaterResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'address' => $this->address,
+            'status' => $this->status,
+            'created_at' => Carbon::parse( $this->created_at)->format('d-m-Y H:i:s'),
+        ];
     }
 }

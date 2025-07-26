@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Theater;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreTheaterRequest extends FormRequest
 {
@@ -27,5 +29,21 @@ class StoreTheaterRequest extends FormRequest
             'address' => ['required', 'string', 'regex:/^[A-Za-z0-9() ,\-]+$/s'],
             'status' => ['required', 'boolean']
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param  \Illuminate\Contracts\Validation\Validator  $validator
+     * @return void
+     *
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     */
+    public function failedValidation(Validator $validator) {
+        throw new HttpResponseException(response()->json([
+            'status' => false,
+            'message' => "Validation failed",
+            'error' => $validator->errors(),
+        ], 422));
     }
 }

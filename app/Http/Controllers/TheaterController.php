@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Helpers\ApiResponse;
 use App\Http\Requests\Theater\StoreTheaterRequest;
 use App\Http\Requests\Theater\UpdateTheaterRequest;
-use App\Models\Theater;
+use App\Http\Resources\Theater\TheaterResource;
 use App\Repositories\TheaterRepository;
-use Illuminate\Http\Request;
 
 class TheaterController extends Controller
 {
@@ -21,7 +21,15 @@ class TheaterController extends Controller
      */
     public function index()
     {
-        return $this->theaterRepository->all();
+        $list = $this->theaterRepository->all();
+        if (!empty($list)) {
+            return ApiResponse::success(
+                TheaterResource::collection($list),
+                "Theater list"
+            );
+        }
+
+        return ApiResponse::error(message: "Data not found", status: 404);
     }
 
     /**
@@ -29,12 +37,15 @@ class TheaterController extends Controller
      */
     public function store(StoreTheaterRequest $request)
     {
-        $this->theaterRepository->create($request->validated());
+        $theater = $this->theaterRepository->create($request->validated());
+        if (!is_null($theater)) {
+            return ApiResponse::success(
+                new TheaterResource($theater),
+                "Data added successfully!"
+            );
+        }
 
-        return response()->json([
-            'status' => true,
-            'message' => "Data saved successfully!!!"
-        ], 200);
+        return ApiResponse::error(message: "Failed to save data", status: 500);
     }
 
     /**
@@ -42,7 +53,15 @@ class TheaterController extends Controller
      */
     public function show(int $id)
     {
-        return $this->theaterRepository->find($id);
+        $theater = $this->theaterRepository->find($id);
+        if ($theater) {
+            return ApiResponse::success(
+                new TheaterResource($theater),
+                "Data found"
+            );
+        }
+
+        return ApiResponse::error(message: "Data not found", status: 404);
     }
 
     /**
@@ -50,9 +69,12 @@ class TheaterController extends Controller
      */
     public function update(UpdateTheaterRequest $request, int $id)
     {
-        $this->theaterRepository->update($id, $request->validated());
+        $theater = $this->theaterRepository->update($id, $request->validated());
 
-        return response()->json([], 200);
+        return ApiResponse::success(
+            new TheaterResource($theater),
+            "Data added successfully!"
+        );
     }
 
     /**
@@ -62,6 +84,8 @@ class TheaterController extends Controller
     {
         $this->theaterRepository->delete($id);
 
-        return response()->json([], 200);
+        return ApiResponse::success(
+            message: "Data deleted!"
+        );
     } 
 }
