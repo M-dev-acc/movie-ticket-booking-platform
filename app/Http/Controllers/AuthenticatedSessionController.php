@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Store a newly created resource in storage.
+     * Create and store an auth token.
      */
     public function store(LoginRequest $request): JsonResponse
     {
@@ -45,7 +45,7 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove an auth token
      */
     public function destroy(Request $request):JsonResponse
     {
