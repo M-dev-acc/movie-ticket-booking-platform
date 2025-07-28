@@ -57,4 +57,12 @@ class AuthenticatedSessionController extends Controller
             'message' => "Successfully logout!"
         ], 200);;
     }
+
+    public function loggedUser(): JsonResponse {
+        return response()->json([
+            'status' => true,
+            'data' => auth()->user()->toArray(),
+            'message' => "I am in the zone!!!"
+        ]);
+    }
 }

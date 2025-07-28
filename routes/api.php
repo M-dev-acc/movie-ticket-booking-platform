@@ -20,22 +20,25 @@ Route::group([
         'middleware' => "role:admin",
         'prefix' => "admin"
     ], function () {
-        Route::get('/', fn() => response()->json([
-            'status' => true,
-            'data' => auth()->user()->toArray(), 
-            'message' => "I am in the zone!!!"
-        ]));
+        Route::get('/', [AuthenticatedSessionController::class, 'loggedUser']);
 
         Route::controller(TheaterController::class)
-        ->prefix('theater')
-        ->group(function () {
-            Route::get('/{page}', 'index')
-            ->where('page', '[0-9]+');
-            Route::get('/{id}', 'show');
-            Route::post('/create', 'store')->middleware('permission:create theater');
-            Route::patch('/update/{id}', 'update')->middleware('permission:update theater');
-            Route::delete('/delete/{id}',  'destroy')->middleware('permission:delete theater');
-        });
+            ->prefix('theater')
+            ->group(function () {
+                Route::get('/page/{page}', 'index')
+                    ->where('page', '[0-9]+');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+');
+                Route::post('/create', 'store')
+                    ->middleware('permission:create theater');
+                Route::patch('/update/{id}', 'update')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:update theater');
+                Route::delete('/delete/{id}',  'destroy')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:delete theater');
+            }
+        );
 
     });
 

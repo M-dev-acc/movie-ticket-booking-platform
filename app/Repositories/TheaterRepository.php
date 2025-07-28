@@ -10,7 +10,7 @@ class TheaterRepository implements TheaterRepositoryInterface
 {
     public function all(int $page) {
         $perPage = 10;
-        $search = ['*'];
+        $columns = ['*'];
         return Theater::paginate($perPage, ['*'], 'page', $page);
     }
 
