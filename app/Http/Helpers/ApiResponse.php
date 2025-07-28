@@ -22,7 +22,12 @@ class ApiResponse
         ], $status);
     }
 
-    public static function pagination() : void {
-        //
+    public static function paginated($data, array $meta, string $message = "Success", int $status = 200) : JsonResponse {
+        return response()->json([
+            'status' => true,
+            'message' => $message,
+            'data' => $data,
+            'meta' => $meta,
+        ], $status);
     }
 }

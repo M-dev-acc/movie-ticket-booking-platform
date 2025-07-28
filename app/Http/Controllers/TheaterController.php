@@ -19,12 +19,20 @@ class TheaterController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(int $page)
     {
-        $list = $this->theaterRepository->all();
+        $list = $this->theaterRepository->all($page);
         if (!empty($list)) {
-            return ApiResponse::success(
-                TheaterResource::collection($list),
+
+            return ApiResponse::paginated(
+                TheaterResource::collection($list->items()),
+                [
+                    'perPage' => $list->perPage(),
+                    'currentPage' => $list->currentPage(),
+                    'path' => $list->path(),
+                    'total' => $list->total(),
+                    'lastPage' => $list->lastPage(),
+                ],
                 "Theater list"
             );
         }

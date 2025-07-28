@@ -29,7 +29,8 @@ Route::group([
         Route::controller(TheaterController::class)
         ->prefix('theater')
         ->group(function () {
-            Route::get('/', 'index');
+            Route::get('/{page}', 'index')
+            ->where('page', '[0-9]+');
             Route::get('/{id}', 'show');
             Route::post('/create', 'store')->middleware('permission:create theater');
             Route::patch('/update/{id}', 'update')->middleware('permission:update theater');

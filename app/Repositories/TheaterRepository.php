@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TheaterRepository implements TheaterRepositoryInterface
 {
-    public function all() : Collection {
-        return Theater::all();
+    public function all(int $page) {
+        $perPage = 10;
+        $search = ['*'];
+        return Theater::paginate($perPage, ['*'], 'page', $page);
     }
 
     public function find(int $id): Theater {

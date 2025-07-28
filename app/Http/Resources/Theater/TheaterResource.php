@@ -20,7 +20,7 @@ class TheaterResource extends JsonResource
             'name' => $this->name,
             'address' => $this->address,
             'status' => $this->status,
-            'created_at' => Carbon::parse( $this->created_at)->format('d-m-Y H:i:s'),
+            'created_at' => $this->created_at,
         ];
     }
 }

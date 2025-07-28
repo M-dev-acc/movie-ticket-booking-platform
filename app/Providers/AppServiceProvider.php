@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Repositories\Interfaces\TheaterRepositoryInterface;
+use App\Repositories\TheaterRepository;
 use Illuminate\Support\ServiceProvider;
-use TheaterRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
