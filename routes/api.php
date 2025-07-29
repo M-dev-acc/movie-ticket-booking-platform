@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticatedSessionController;
+use App\Http\Controllers\MovieController;
 use App\Http\Controllers\TheaterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,12 @@ Route::group([
                     ->middleware('permission:delete theater');
             }
         );
+
+        Route::controller(MovieController::class)
+            ->prefix('movies')
+            ->group(function () {
+                Route::get('/', [MovieController::class, 'index']);
+            });
 
     });
 
