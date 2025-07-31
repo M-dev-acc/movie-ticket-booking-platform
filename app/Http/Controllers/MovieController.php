@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
-use GuzzleHttp\Client;
+use App\Repositories\MovieRepository;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
 {
+    public function __construct(
+        protected $repository = new MovieRepository()
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        
+        // dd(today()->previousWeekendDay()->format('Y-m-d'));
+        return $this->repository->getLatestRelease(config('services.language_code.hindi'));
     }
 
     /**
