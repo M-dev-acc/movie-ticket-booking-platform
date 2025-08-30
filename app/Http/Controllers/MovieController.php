@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Movie;
 use App\Repositories\MovieRepository;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class MovieController extends Controller
 {
@@ -15,15 +18,15 @@ class MovieController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(int $page = 1) : JsonResponse
     {
-        return $this->repository->getLatestRelease(config('services.language_code.hindi'));
+        return $this->repository->getLatestRelease(config('services.language_code.hindi'), $page);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(int $id)
+    public function show(int $id) : JsonResponse
     {
         return $this->repository->getById($id);
     }
@@ -31,9 +34,9 @@ class MovieController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function upcoming()
+    public function upcoming(int $page = 1) 
     {
-        return $this->repository->getUpcoming(config('services.language_code.hindi'));
+        return $this->repository->getUpcoming(config('services.language_code.hindi'), $page);
     }
 
     /**

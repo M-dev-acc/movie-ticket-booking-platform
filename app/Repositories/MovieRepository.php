@@ -11,11 +11,11 @@ class MovieRepository implements MoviesRepositoryInterface
         protected MoviesAPIClient $apiClient = new MoviesAPIClient()
     ) {}
 
-    public function getLatestRelease(string $language) {
+    public function getLatestRelease(string $language, int $page = 1) {
         $request = [
             'include_adult' => 'true',
             'include_video' => 'false',
-            'page' => 1,
+            'page' => $page,
             'primary_release_year' => today()->format('Y'),
             'primary_release_date.gte' => today()->previousWeekendDay()->format('Y-m-d'),
             'primary_release_date.lte' => today()->format('Y-m-d'),
@@ -30,11 +30,11 @@ class MovieRepository implements MoviesRepositoryInterface
         return $this->apiClient->get("discover/movie", $request);
     }
 
-    public function getUpcoming(string $language) {
+    public function getUpcoming(string $language, int $page = 1) {
         $request = [
             'include_adult' => 'true',
             'include_video' => 'false',
-            'page' => 1,
+            'page' => $page,
             'primary_release_year' => today()->format('Y'),
             'primary_release_date.gte' => today()->format('Y-m-d'),
             'primary_release_date.lte' => today()->addDays(7)->format('Y-m-d'),

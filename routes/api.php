@@ -27,7 +27,7 @@ Route::group([
             ->prefix('theater')
             ->group(function () {
                 Route::get('/page/{page}', 'index')
-                    ->where('page', '[0-9]+');
+                    ->where('page', '^[1-9][0-9]*$');
                 Route::get('/{id}', 'show')
                     ->where('id', '[0-9]+');
                 Route::post('/create', 'store')
@@ -44,12 +44,13 @@ Route::group([
         Route::controller(MovieController::class)
             ->prefix('movies')
             ->group(function () {
-                Route::get('/', [MovieController::class, 'index']);
-                Route::get('/upcoming', [MovieController::class, 'upcoming']);
+                Route::get('/{page?}', [MovieController::class, 'index'])
+                    ->where('page', '^[1-9][0-9]*$');
+                Route::get('/upcoming/{page?}', [MovieController::class, 'upcoming'])
+                    ->where('page', '^[1-9][0-9]*$');
                 Route::get('/{id}', [MovieController::class, 'show'])
                     ->where('id', '[0-9]+');
             });
-
     });
 
     Route::group([
