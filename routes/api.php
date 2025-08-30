@@ -45,6 +45,9 @@ Route::group([
             ->prefix('movies')
             ->group(function () {
                 Route::get('/', [MovieController::class, 'index']);
+                Route::get('/upcoming', [MovieController::class, 'upcoming']);
+                Route::get('/{id}', [MovieController::class, 'show'])
+                    ->where('id', '[0-9]+');
             });
 
     });

@@ -17,8 +17,23 @@ class MovieController extends Controller
      */
     public function index()
     {
-        // dd(today()->previousWeekendDay()->format('Y-m-d'));
         return $this->repository->getLatestRelease(config('services.language_code.hindi'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(int $id)
+    {
+        return $this->repository->getById($id);
+    }
+    
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function upcoming()
+    {
+        return $this->repository->getUpcoming(config('services.language_code.hindi'));
     }
 
     /**
@@ -37,13 +52,6 @@ class MovieController extends Controller
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Movie $movie)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
