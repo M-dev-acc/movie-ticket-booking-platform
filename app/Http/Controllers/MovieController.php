@@ -42,9 +42,28 @@ class MovieController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function search(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'query' => "required|string|min:1|max:255|regex:/^[A-Za-z0-9() ]+$/s"
+        ], 
+        [
+            'query.required' => "Please enter valid search input",
+            'query.string' => "Please enter valid search input",
+            'query.min' => "Please enter valid search input",
+            'query.regex' => "Please enter valid search input",
+            'query.max' => "Please enter input below 255 characters",
+        ]);
+
+        $list = Movie::select([
+            'title',
+            'poster_path',
+            'release_date',
+            'generes',
+            'original_language'
+            ])
+            ->where('title', "LIKE", "%". $validatedData['query'])
+            ->get();
     }
 
     /**

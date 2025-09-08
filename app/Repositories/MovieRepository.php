@@ -17,7 +17,7 @@ class MovieRepository implements MoviesRepositoryInterface
             'include_video' => 'false',
             'page' => $page,
             'primary_release_year' => today()->format('Y'),
-            'primary_release_date.gte' => today()->previousWeekendDay()->format('Y-m-d'),
+            'primary_release_date.gte' => today()->subDays(15)->format('Y-m-d'),
             'primary_release_date.lte' => today()->format('Y-m-d'),
             'region' => "ISO 3166-1",
             'sort_by' => "primary_release_date.desc",
@@ -25,7 +25,6 @@ class MovieRepository implements MoviesRepositoryInterface
             'vote_average.lte' => 10,
             'with_original_language' => $language,
             'with_release_type' => '3,2',
-            'year' => today()->format('Y'),
         ];
         return $this->apiClient->get("discover/movie", $request);
     }
@@ -50,5 +49,9 @@ class MovieRepository implements MoviesRepositoryInterface
     public function getById(string $id) {
         $apiEndPoint = "movie/$id";
         return $this->apiClient->get($apiEndPoint);
+    }
+
+    public function filter(array $request) {
+        return $this->apiClient->get("discover/movie", $request);
     }
 }
