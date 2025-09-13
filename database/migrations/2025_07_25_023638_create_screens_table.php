@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('screens', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('theater_id');
+
             $table->foreign('theater_id')->references('id')->on('theaters');
             $table->tinyInteger('type')->unsigned();
             $table->integer('capacity')->unsigned();
             $table->boolean('status');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

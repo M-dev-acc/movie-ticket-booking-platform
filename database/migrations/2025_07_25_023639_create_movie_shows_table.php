@@ -13,11 +13,23 @@ return new class extends Migration
     {
         Schema::create('movie_shows', function (Blueprint $table) {
             $table->id();
-            $table->foreign('movie_id')->references('uniqueid')->on('movies');
-            $table->foreign('theater_id')->references('id')->on('theaters');
-            $table->foreign('screen_id')->references('id')->on('screens');
+
+            $table->unsignedBigInteger('movie_id');
+            $table->unsignedBigInteger('theater_id');
+            $table->unsignedBigInteger('screen_id');
+
+            $table->foreign('movie_id')
+                ->references('uniqueid')
+                ->on('movies')
+                ->onDelete('cascade');
+            $table->foreign('theater_id')
+                ->references('id')
+                ->on('theaters');
+            $table->foreign('screen_id')
+                ->references('id')
+                ->on('screens');
+            
             $table->integer('duration')->unsigned();
-            $table->decimal('base_price')->unsigned();
             $table->timestamps();
         });
     }
