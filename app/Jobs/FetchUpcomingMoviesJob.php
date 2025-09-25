@@ -39,7 +39,7 @@ class FetchUpcomingMoviesJob implements ShouldQueue
             Movie::upsert(
                 $filteredList->toArray(),
                 ['uniqueid'],
-                ['title', 'poster', 'release_date', 'updated_at']
+                ['title', 'poster', 'release_date', 'updated_at', 'rating']
             );
         }
     }
@@ -63,6 +63,7 @@ class FetchUpcomingMoviesJob implements ShouldQueue
                 'release_date' => $item->release_date ?? '',
                 'genres' => json_encode($item->genre_ids ?? []),
                 'original_language' => $item->original_language ?? '',
+                'rating' => $item->vote_average ?? 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ])
