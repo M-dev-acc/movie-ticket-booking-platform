@@ -35,8 +35,12 @@ class MovieRepository implements MoviesRepositoryInterface
             'include_video' => 'false',
             'page' => $page,
             'primary_release_year' => today()->format('Y'),
-            'primary_release_date.gte' => today()->format('Y-m-d'),
-            'primary_release_date.lte' => today()->addDays(15)->format('Y-m-d'),
+            // 'primary_release_date.gte' => today()->format('Y-m-d'),
+            // 'primary_release_date.lte' => today()->addDays(15)->format('Y-m-d'),
+
+            'primary_release_date.gte' => today()->subDays(120)->format('Y-m-d'),
+            'primary_release_date.lte' => today()->format('Y-m-d'),
+
             'region' => "ISO 3166-1",
             'sort_by' => "primary_release_date.desc",
             'with_original_language' => $language,

@@ -24,24 +24,28 @@ class FetchUpcomingMoviesJob implements ShouldQueue
 
     public function handle(): void
     {
-        // Resolve repository here instead of injecting in constructor
         $repository = app(MovieRepository::class);
+        $page = 1;
 
-        $apiResponse = $repository->getUpcoming($this->languageCode)->getData();
+        do {
+            $apiResponse = $repository->getUpcoming($this->languageCode, $page)->getData();
 
-        if (!$apiResponse || !$apiResponse->status || empty($apiResponse->data->results)) {
-            return;
-        }
+            if (!$apiResponse || !$apiResponse->status || empty($apiResponse->data->results)) {
+                break;
+            }
 
-        $filteredList = $this->processResults($apiResponse->data->results);
+            $filteredList = $this->processResults($apiResponse->data->results);
 
-        if ($filteredList->isNotEmpty()) {
-            Movie::upsert(
-                $filteredList->toArray(),
-                ['uniqueid'],
-                ['title', 'poster', 'release_date', 'updated_at', 'rating']
-            );
-        }
+            if ($filteredList->isNotEmpty()) {
+                Movie::upsert(
+                    $filteredList->toArray(),
+                    ['uniqueid'],
+                    ['title', 'poster', 'release_date', 'updated_at', 'rating']
+                );
+            }
+
+            $page++;
+        } while ($page <= $apiResponse->data->total_pages);
     }
 
     private function processResults(array $results)
