@@ -3,65 +3,86 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use Illuminate\Http\JsonResponse;
+use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 
-class MoviesAPIClient {
+class MoviesAPIClient
+{
     protected Client $client;
     protected string $baseUrl;
-    protected string $apiKey; 
+    protected string $apiKey;
 
-    public function __construct() {
-        $this->client = new Client();
-        $this->baseUrl = config('services.movies_db.base_url');
+    public function __construct()
+    {
+        $this->client = new Client([
+            'timeout' => 10, // fail fast
+        ]);
+        $this->baseUrl = rtrim(config('services.movies_db.base_url'), '/');
         $this->apiKey = config('services.movies_db.api_key');
     }
 
-    private function run(string $endpoint, string $method = 'GET', array $headers = []) {
-        $options = [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'accept' => 'application/json',
-            ],
+    /**
+     * Run an API request
+     *
+     * @throws \RuntimeException
+     */
+    private function run(string $endpoint, string $method = 'GET', array $options = []): array
+    {
+        $url = $this->baseUrl . '/' . ltrim($endpoint, '/');
+
+        $defaultHeaders = [
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Accept'        => 'application/json',
         ];
 
-        if (!empty($headers)) {
-            $options['headers'] += $headers;
-        }
+        $options['headers'] = array_merge($defaultHeaders, $options['headers'] ?? []);
 
-        return $this->parseResponse($this->client
-            ->request($method, $this->baseUrl . "$endpoint", $options));
+        try {
+            $response = $this->client->request($method, $url, $options);
+            return $this->parseResponse($response);
+        } catch (RequestException $e) {
+            throw new \RuntimeException(
+                "Movies API request failed: " . $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        }
     }
 
-    private function parseResponse(ResponseInterface $response) {
+    /**
+     * Parse the Guzzle response
+     */
+    private function parseResponse(ResponseInterface $response): array
+    {
         $content = json_decode($response->getBody()->getContents(), true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            return response()
-                ->json([
-                        'status' => false,
-                        'message' => "Invalid response"
-                    ],
-                    500);
+            throw new \RuntimeException("Invalid JSON response from Movies API");
         }
 
-        return response()
-            ->json([
-                    'status' => ($response->getStatusCode() === 200),
-                    'data' => $content
-                ],
-                $response->getStatusCode());
+        return [
+            'status' => $response->getStatusCode() == 200,
+            'status_code' => $response->getStatusCode(),
+            'data' => $content,
+        ];
     }
 
-    public function get(string $endpoint, array $request = [], array $headers = []) {
-        if (!empty($request)) {
-            $endpoint .= "?" . http_build_query($request);
-        }
-
-        return $this->run($endpoint, 'GET', $headers);
+    /**
+     * Perform GET request
+     */
+    public function get(string $endpoint, array $query = [], array $headers = []): array
+    {
+        return $this->run($endpoint, 'GET', [
+            'query' => $query,
+            'headers' => $headers,
+        ]);
     }
 
-    public function check() {
-        return $this->run("authentication", "GET");
+    /**
+     * Simple check if API is alive
+     */
+    public function check(): array
+    {
+        return $this->get('authentication');
     }
 }

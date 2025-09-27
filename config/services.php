@@ -41,7 +41,7 @@ return [
     ],
 
     'language_code' => [
-        'US_english' => 'en-US',
+        'english' => 'en',
         'hindi' => 'hi',
     ]
 ];

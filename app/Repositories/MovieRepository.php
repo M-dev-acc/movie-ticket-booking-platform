@@ -26,7 +26,8 @@ class MovieRepository implements MoviesRepositoryInterface
             'with_original_language' => $language,
             'with_release_type' => '3,2',
         ];
-        return $this->apiClient->get("discover/movie", $request);
+        $response = $this->apiClient->get("discover/movie", $request);
+        return ($response['status'] && !empty($response['data'])) ? $response['data'] : [];
     }
 
     public function getUpcoming(string $language, int $page = 1) {
@@ -35,24 +36,22 @@ class MovieRepository implements MoviesRepositoryInterface
             'include_video' => 'false',
             'page' => $page,
             'primary_release_year' => today()->format('Y'),
-            // 'primary_release_date.gte' => today()->format('Y-m-d'),
-            // 'primary_release_date.lte' => today()->addDays(15)->format('Y-m-d'),
-
-            'primary_release_date.gte' => today()->subDays(120)->format('Y-m-d'),
-            'primary_release_date.lte' => today()->format('Y-m-d'),
-
+            'primary_release_date.gte' => today()->format('Y-m-d'),
+            'primary_release_date.lte' => today()->addDays(30)->format('Y-m-d'),
             'region' => "ISO 3166-1",
             'sort_by' => "primary_release_date.desc",
             'with_original_language' => $language,
             'with_release_type' => 3,
         ];
 
-        return $this->apiClient->get("discover/movie", $request);
+        $response = $this->apiClient->get("discover/movie", $request);
+        return ($response['status']) ? $response['data'] : [];
     }
 
     public function getById(string $id) {
         $apiEndPoint = "movie/$id";
-        return $this->apiClient->get($apiEndPoint);
+        $response = $this->apiClient->get($apiEndPoint);
+        return ($response['status']) ? $response['data'] : [];
     }
 
     public function filter(array $request) {

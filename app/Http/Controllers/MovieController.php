@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\FetchUpcomingMoviesJob;
 use App\Models\Movie;
 use App\Repositories\MovieRepository;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +21,19 @@ class MovieController extends Controller
      */
     public function index(int $page = 1) : JsonResponse
     {
-        return $this->repository->getLatestRelease(config('services.language_code.hindi'), $page);
+        $moviesData = $this->repository->getLatestRelease(config('services.language_code.hindi'), $page);
+        if (empty($moviesData['results'])) {
+            return response()->json([
+                'status' => false,
+                'data' => [],
+                'message' => "Data not found!",
+            ], 404);
+        }
+        return response()->json([
+                'status' => true,
+                'data' => $moviesData,
+                'message' => "Upcoming movies list",
+            ], 200);
     }
 
     /**
@@ -28,15 +41,40 @@ class MovieController extends Controller
      */
     public function show(int $id) : JsonResponse
     {
-        return $this->repository->getById($id);
+        $movieData = $this->repository->getById($id);
+
+        if (empty($movieData)) {
+            return response()->json([
+                'status' => false,
+                'data' => [],
+                'message' => "Data not found!",
+            ], 404);
+        }
+        return response()->json([
+                'status' => true,
+                'data' => $movieData,
+                'message' => "Upcoming movies list",
+            ], 200);
     }
     
     /**
      * Show the form for creating a new resource.
      */
     public function upcoming(int $page = 1) 
-    {
-        return $this->repository->getUpcoming(config('services.language_code.hindi'), $page);
+   {
+        $moviesData = $this->repository->getUpcoming(config('services.language_code.hindi'), $page);
+        if (empty($moviesData['results'])) {
+            return response()->json([
+                'status' => false,
+                'data' => [],
+                'message' => "Data not found!",
+            ], 404);
+        }
+        return response()->json([
+                'status' => true,
+                'data' => $moviesData,
+                'message' => "Upcoming movies list",
+            ], 200);
     }
 
     /**

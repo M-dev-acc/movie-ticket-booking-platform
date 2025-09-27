@@ -15,7 +15,7 @@ class FetchUpcomingMoviesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected string $languageCode;
+    public string $languageCode;
 
     public function __construct(string $languageCode)
     {
@@ -28,14 +28,12 @@ class FetchUpcomingMoviesJob implements ShouldQueue
         $page = 1;
 
         do {
-            $apiResponse = $repository->getUpcoming($this->languageCode, $page)->getData();
+            $moviesData = $repository->getUpcoming($this->languageCode, $page);
 
-            if (!$apiResponse || !$apiResponse->status || empty($apiResponse->data->results)) {
+            if (empty($moviesData['results'])) {
                 break;
             }
-
-            $filteredList = $this->processResults($apiResponse->data->results);
-
+            $filteredList = $this->processResults($moviesData['results']);
             if ($filteredList->isNotEmpty()) {
                 Movie::upsert(
                     $filteredList->toArray(),
@@ -45,7 +43,7 @@ class FetchUpcomingMoviesJob implements ShouldQueue
             }
 
             $page++;
-        } while ($page <= $apiResponse->data->total_pages);
+        } while ($page <= $moviesData['total_pages']);
     }
 
     private function processResults(array $results)
@@ -57,17 +55,16 @@ class FetchUpcomingMoviesJob implements ShouldQueue
             ])
             ->pluck('id')
             ->toArray();
-
         return collect($results)
-            ->reject(fn($item) => in_array($item->id, $ids))
+            ->reject(fn($item) => in_array($item['id'], $ids))
             ->map(fn($item) => [
-                'uniqueid' => $item->id,
-                'title' => $item->title ?? '',
-                'poster' => $item->poster_path ?? '',
-                'release_date' => $item->release_date ?? '',
-                'genres' => json_encode($item->genre_ids ?? []),
-                'original_language' => $item->original_language ?? '',
-                'rating' => $item->vote_average ?? 0,
+                'uniqueid' => $item['id'],
+                'title' => $item['title'] ?? '',
+                'poster' => $item['poster_path'] ?? '',
+                'release_date' => $item['release_date'] ?? '',
+                'genres' => json_encode($item['genre_ids'] ?? []),
+                'original_language' => $item['original_language'] ?? '',
+                'rating' => $item['vote_average'] ?? 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ])

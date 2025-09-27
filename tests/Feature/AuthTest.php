@@ -13,7 +13,8 @@ class AuthTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * A basic feature test example.
+     * @test
+     * A basic feature test valid credentials.
      */
     public function test_user_can_login_with_valid_credentials(): void
     {

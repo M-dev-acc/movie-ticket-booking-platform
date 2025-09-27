@@ -44,7 +44,7 @@ Route::group([
         Route::controller(MovieController::class)
             ->prefix('movies')
             ->group(function () {
-                Route::get('/{page?}', [MovieController::class, 'index'])
+                Route::get('/latest/{page?}', [MovieController::class, 'index'])
                     ->where('page', '^[1-9][0-9]*$');
                 Route::get('/upcoming/{page?}', [MovieController::class, 'upcoming'])
                     ->where('page', '^[1-9][0-9]*$');
