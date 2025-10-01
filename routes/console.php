@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::job(new FetchUpcomingMoviesJob(config('services.language_code.english')))->everyFiveMinutes();
+Schedule::job(new FetchUpcomingMoviesJob(config('services.language_code.hindi')))->everyFiveMinutes();

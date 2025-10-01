@@ -46,7 +46,7 @@ class FetchUpcomingMoviesJob implements ShouldQueue
         } while ($page <= $moviesData['total_pages']);
     }
 
-    private function processResults(array $results)
+    public function processResults(array $results)
     {
         $ids = Movie::select('id')
             ->whereBetween('created_at', [
