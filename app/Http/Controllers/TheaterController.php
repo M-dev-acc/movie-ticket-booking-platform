@@ -63,14 +63,14 @@ class TheaterController extends Controller
     public function show(string $id): JsonResponse
     {
         $theater = $this->repository->find($id);
-        if ($theater) {
-            return ApiResponse::success(
-                new TheaterResource($theater),
-                "Data found"
-            );
-        }
+        // if ($theater) {
+        // }
+        return ApiResponse::success(
+            new TheaterResource($theater),
+            "Data found"
+        );
 
-        return ApiResponse::error(message: "Data not found", status: 404);
+        // return ApiResponse::error(message: "Data not found", status: 404);
     }
 
     /**

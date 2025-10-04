@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Helpers\ApiResponse;
 use App\Jobs\FetchUpcomingMoviesJob;
 use App\Models\Movie;
 use App\Repositories\MovieRepository;
@@ -23,17 +24,9 @@ class MovieController extends Controller
     {
         $moviesData = $this->repository->getLatestRelease(config('services.language_code.hindi'), $page);
         if (empty($moviesData['results'])) {
-            return response()->json([
-                'status' => false,
-                'data' => [],
-                'message' => "Data not found!",
-            ], 404);
+            return ApiResponse::error(message: "Data not found!", status:404);
         }
-        return response()->json([
-                'status' => true,
-                'data' => $moviesData,
-                'message' => "Upcoming movies list",
-            ], 200);
+        return ApiResponse::success($moviesData, "Latest movies list");
     }
 
     /**
@@ -44,17 +37,9 @@ class MovieController extends Controller
         $movieData = $this->repository->getById($id);
 
         if (empty($movieData)) {
-            return response()->json([
-                'status' => false,
-                'data' => [],
-                'message' => "Data not found!",
-            ], 404);
+            return ApiResponse::error(message: "Data not found", status: 404);
         }
-        return response()->json([
-                'status' => true,
-                'data' => $movieData,
-                'message' => "Upcoming movies list",
-            ], 200);
+        return ApiResponse::success($movieData, "Movie data");
     }
     
     /**
@@ -64,17 +49,9 @@ class MovieController extends Controller
    {
         $moviesData = $this->repository->getUpcoming(config('services.language_code.hindi'), $page);
         if (empty($moviesData['results'])) {
-            return response()->json([
-                'status' => false,
-                'data' => [],
-                'message' => "Data not found!",
-            ], 404);
+            return ApiResponse::error(message: "Data not found", status: 404);
         }
-        return response()->json([
-                'status' => true,
-                'data' => $moviesData,
-                'message' => "Upcoming movies list",
-            ], 200);
+        return ApiResponse::success($moviesData, "Upcoming movies list");
     }
 
     /**

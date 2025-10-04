@@ -10,9 +10,23 @@ class ScreenController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(int $theater)
     {
-        //
+        $list = Screen::where('theater_id', $theater)
+            ->get();
+        if (!empty($list)) {
+            return response()->json([
+                'status' => false,
+                'data' => [],
+                'message' => "Data not found!"
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $list,
+            'message' => "Theater screen list"
+        ], 200);
     }
 
     /**

@@ -14,7 +14,7 @@ class ApiResponse
         ], $status);
     }
 
-    public static function error(array $errors = [], string $message = "Success", int $status = 400) : JsonResponse {
+    public static function error(array $errors = [], string $message = "Something went wrong!", int $status = 500) : JsonResponse {
         return response()->json([
             'status' => false,
             'message' => $message,
