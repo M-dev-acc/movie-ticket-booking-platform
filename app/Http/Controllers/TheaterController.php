@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Helpers\ApiResponse;
 use App\Http\Requests\Theater\StoreTheaterRequest;
 use App\Http\Requests\Theater\UpdateTheaterRequest;
+use App\Http\Resources\Theater\TheaterCollection;
 use App\Http\Resources\Theater\TheaterResource;
 use App\Repositories\TheaterRepository;
 use Illuminate\Http\JsonResponse;
@@ -20,22 +21,18 @@ class TheaterController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(int $page): JsonResponse
+    public function index(int $page): JsonResponse | TheaterCollection
     {
         $list = $this->repository->all($page);
         if (!empty($list)) {
 
-            return ApiResponse::paginated(
-                TheaterResource::collection($list->items()),
-                [
-                    'perPage' => $list->perPage(),
-                    'currentPage' => $list->currentPage(),
-                    'path' => $list->path(),
-                    'total' => $list->total(),
-                    'lastPage' => $list->lastPage(),
-                ],
-                "Theater list"
-            );
+            // return (new TheaterCollection($list))
+            //     ->additional([
+            //         'status' => true,
+            //         'message' => 'Theater list',
+            //     ]);
+
+            return new TheaterCollection($list);
         }
 
         return ApiResponse::error(message: "Data not found", status: 404);
@@ -63,14 +60,14 @@ class TheaterController extends Controller
     public function show(string $id): JsonResponse
     {
         $theater = $this->repository->find($id);
-        // if ($theater) {
-        // }
-        return ApiResponse::success(
-            new TheaterResource($theater),
-            "Data found"
-        );
+        if ($theater) {
+            return ApiResponse::success(
+                new TheaterResource($theater),
+                "Data found"
+            );
+        }
 
-        // return ApiResponse::error(message: "Data not found", status: 404);
+        return ApiResponse::error(message: "Data not found", status: 404);
     }
 
     /**
