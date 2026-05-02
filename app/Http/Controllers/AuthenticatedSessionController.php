@@ -38,7 +38,7 @@ class AuthenticatedSessionController extends Controller
             'status' => true,
             'data' => [
                 'access_token' => $token,
-                'usrer' => $user
+                'user' => $user
             ],
             'message' => "Successfully logged in!"
         ], 200);
@@ -50,7 +50,7 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request):JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
-        
+
         return response()->json([
             'status' => true,
             'data' => [],

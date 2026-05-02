@@ -19,7 +19,7 @@ class Theater extends Model
     ];
 
     public function screens() : HasMany {
-        return $this->hasMany(Screen::class, 'screen_id');
+        return $this->hasMany(Screen::class, 'theater_id');
     }
 
     public function shows() : HasManyThrough {

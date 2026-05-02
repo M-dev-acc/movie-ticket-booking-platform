@@ -14,7 +14,7 @@ class ScreenController extends Controller
     {
         $list = Screen::where('theater_id', $theater)
             ->get();
-        if (!empty($list)) {
+        if (empty($list)) {
             return response()->json([
                 'status' => false,
                 'data' => [],
