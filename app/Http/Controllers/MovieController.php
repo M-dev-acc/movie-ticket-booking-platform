@@ -2,56 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Helpers\ApiResponse;
-use App\Jobs\FetchUpcomingMoviesJob;
 use App\Models\Movie;
-use App\Repositories\MovieRepository;
-use Illuminate\Database\Eloquent\Model;
+use App\Repositories\Interfaces\MoviesRepositoryInterface;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 
 class MovieController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
-        protected $repository = new MovieRepository()
+        protected MoviesRepositoryInterface $repository
     ) {}
 
     /**
-     * Display a listing of the resource.
+     * Returns a list of latest movies
      */
     public function index(int $page = 1) : JsonResponse
     {
-        $moviesData = $this->repository->getLatestRelease(config('services.language_code.hindi'), $page);
-        if (empty($moviesData['results'])) {
-            return ApiResponse::error(message: "Data not found!", status:404);
+        $movies = $this->repository->getLatestRelease(config('services.language_code.hindi'), $page);
+        if (empty($movies['results'])) {
+            return $this->notFound();
         }
-        return ApiResponse::success($moviesData, "Latest movies list");
+        return $this->success(data: $movies, message: "Latest movies");
     }
 
     /**
-     * Display the specified resource.
+     * Return the detials of specific movie.
      */
     public function show(int $id) : JsonResponse
     {
-        $movieData = $this->repository->getById($id);
+        $movie = $this->repository->getById($id);
 
-        if (empty($movieData)) {
-            return ApiResponse::error(message: "Data not found", status: 404);
+        if (empty($movie)) {
+            return $this->notFound();
         }
-        return ApiResponse::success($movieData, "Movie data");
+        return $this->success(data: $movie, message: "Latest movies");
     }
-    
+
     /**
      * Show the form for creating a new resource.
      */
-    public function upcoming(int $page = 1) 
+    public function upcoming(int $page = 1)
    {
-        $moviesData = $this->repository->getUpcoming(config('services.language_code.hindi'), $page);
-        if (empty($moviesData['results'])) {
-            return ApiResponse::error(message: "Data not found", status: 404);
+        $movies = $this->repository->getUpcoming(config('services.language_code.hindi'), $page);
+        if (empty($movies['results'])) {
+            return $this->notFound(message: "Data not found");
         }
-        return ApiResponse::success($moviesData, "Upcoming movies list");
+        return $this->success(data: $movies, message: "Upcoming movies list");
     }
 
     /**
@@ -61,7 +60,7 @@ class MovieController extends Controller
     {
         $validatedData = $request->validate([
             'query' => "required|string|min:1|max:255|regex:/^[A-Za-z0-9() ]+$/s"
-        ], 
+        ],
         [
             'query.required' => "Please enter valid search input",
             'query.string' => "Please enter valid search input",

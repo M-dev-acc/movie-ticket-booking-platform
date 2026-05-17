@@ -5,13 +5,12 @@ namespace App\Repositories;
 use App\Models\Theater;
 use App\Repositories\Interfaces\TheaterRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TheaterRepository implements TheaterRepositoryInterface
 {
-    public function all(int $page) {
-        $perPage = 10;
-        $columns = ['*'];
-        return Theater::paginate($perPage, ['*'], 'page', $page);
+    public function all(int $perPage = 10): LengthAwarePaginator {
+        return Theater::latest()->paginate($perPage);
     }
 
     public function find(int $id): Theater {
