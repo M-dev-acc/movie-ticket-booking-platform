@@ -28,36 +28,35 @@ trait ApiResponse
      * Returns a standardized 'paginate' response
      */
     protected function paginated(
-        LengthAwarePaginator|ResourceCollection $paginator,
-        string $message,
-        int $statusCode = 200
-    ) : JsonResponse {
-        if ($paginator instanceof ResourceCollection) {
-            $resource = $paginator->resource;
-            $items = $paginator->resource()->getData(true)['data'];
-        } else {
-            $resource = $paginator;
-            $items = $paginator->items();
-        }
+        LengthAwarePaginator $paginator,
+        string $message = 'Success',
+        int $statusCode = 200,
+        ?string $resourceClass = null,
+    ): JsonResponse {
+        // Transform items through the JsonResource if provided,
+        // otherwise return raw paginator items.
+        $items = $resourceClass
+            ? $resourceClass::collection($paginator->items())->resolve()
+            : $paginator->items();
 
         return response()->json([
-            'status' => true,
+            'success' => true,
             'message' => $message,
-            'data' => $items,
-            'meta' => [
-                'current_page' => $resource->currentPage(),
-                'last_page' => $resource->lastPage(),
-                'per_page' => $resource->perPage(),
-                'total' => $resource->total(),
-                'from' => $resource->firstItem(),
-                'to' => $resource->lastItem()
+            'data'    => $items,
+            'meta'    => [
+                'current_page' => $paginator->currentPage(),
+                'last_page'    => $paginator->lastPage(),
+                'per_page'     => $paginator->perPage(),
+                'total'        => $paginator->total(),
+                'from'         => $paginator->firstItem(),
+                'to'           => $paginator->lastItem(),
             ],
-            'links' => [
-                'first' => $resource->url(1),
-                'last' => $resource->url($resource->lastPage()),
-                'prev' => $resource->previousPageUrl(),
-                'next' => $resource->nextPageUrl()
-            ]
+            'links'   => [
+                'first' => $paginator->url(1),
+                'last'  => $paginator->url($paginator->lastPage()),
+                'prev'  => $paginator->previousPageUrl(),
+                'next'  => $paginator->nextPageUrl(),
+            ],
         ], $statusCode);
     }
 

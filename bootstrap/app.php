@@ -35,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Fired when a user is not logged in (e.g. missing/invalid Sanctum token).
         $exceptions->render(function (AuthenticationException $exception) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'Unauthenticated. Please log in to continue.',
                 'errors'  => null,
             ], 401);
@@ -46,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // the authenticated user lacks the required role or permission.
         $exceptions->render(function (UnauthorizedException $exception) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'You do not have the required permissions to perform this action.',
                 'errors'  => [
                     'required' => $exception->getRequiredRoles()
@@ -59,7 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Fired by $this->authorize() in controllers or Gate::authorize().
         $exceptions->render(function (AuthorizationException $exception) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'You are not authorized to perform this action.',
                 'errors'  => null,
             ], 403);
@@ -70,7 +70,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ModelNotFoundException $exception) {
             $model = class_basename($exception->getModel());
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => "{$model} not found.",
                 'errors'  => null,
             ], 404);
@@ -80,7 +80,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Fired when the URL doesn't match any defined route.
         $exceptions->render(function (NotFoundHttpException $exception) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'The requested route does not exist.',
                 'errors'  => null,
             ], 404);
@@ -90,7 +90,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Fired when the route exists but not for the used HTTP verb.
         $exceptions->render(function (MethodNotAllowedHttpException $exception) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'Method not allowed for this route.',
                 'errors'  => null,
             ], 405);
@@ -99,20 +99,20 @@ return Application::configure(basePath: dirname(__DIR__))
         // ── 500 Fallback ─────────────────────────────────────────────────────
         // Catches anything not handled above.
         // In production: hides the real error message for security.
-        $exceptions->render(function (\Throwable $exception) {
-            return response()->json([
-                'success' => false,
-                'message' => app()->isProduction()
-                    ? 'Something went wrong. Please try again later.'
-                    : $exception->getMessage(),
-                'errors'  => app()->isProduction()
-                    ? null
-                    : [
-                        'exception' => get_class($exception),
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine(),
-                    ],
-            ], 500);
-        });
+        // $exceptions->render(function (\Throwable $exception) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => app()->isProduction()
+        //             ? 'Something went wrong. Please try again later.'
+        //             : $exception->getMessage(),
+        //         'errors'  => app()->isProduction()
+        //             ? null
+        //             : [
+        //                 'exception' => get_class($exception),
+        //                 'file'      => $exception->getFile(),
+        //                 'line'      => $exception->getLine(),
+        //             ],
+        //     ], 500);
+        // });
 
     })->create();

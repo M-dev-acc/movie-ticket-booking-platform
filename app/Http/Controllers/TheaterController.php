@@ -25,8 +25,9 @@ class TheaterController extends Controller
         $list = $this->repository->all();
 
         return $this->paginated(
-            TheaterResource::collection($list),
-            "Theater list"
+            $list,
+            "Theater list",
+            resourceClass: TheaterResource::class
         );
     }
 

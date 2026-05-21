@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Theater;
 
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,7 +20,7 @@ class TheaterResource extends JsonResource
             'name' => $this->name,
             'address' => $this->address,
             'status' => $this->status,
-            'created_at' => $this->created_at,
+            'created_at' => $this->created_at->toIso8601String(),
         ];
     }
 }
