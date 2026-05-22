@@ -19,6 +19,12 @@ class ApiClient
         private readonly string $baseUrl
     ){}
 
+    public function get(string $endpoint, array $params = []) : array {
+        return $this->withRetry(fn() =>
+            $this->makeRequest('get', $endpoint, $params)
+        );
+    }
+
     private function withRetry(callable $request) : array {
         $attempts = 0;
 
@@ -38,17 +44,38 @@ class ApiClient
 
                 $this->auth->forceRefresh();
             } catch (ApiRateLimitException $th){
-                
+                Log::info('API rate limited, wait before retry.', [
+                    'retry_after_ms' => $th->retryAfterMs,
+                ]);
+
+                throw $th;
+            } catch (ApiConnectionException $th) {
+                if($attempts >= self::MAX_RETRIES){
+                    Log::error('API Connection failed after max retries.', [
+                        'attempts' => $attempts,
+                        'error' => $th->getMessage(),
+                    ]);
+
+                    throw $th;
+                }
+
+                $delay = self::RETRY_DELAY_MS * (2 ** ($attempts -1));
+
+                Log::warning('API Connnection error, retrying.', [
+                    'attempts' => $attempts,
+                    'delay_ ms' => $delay,
+                    'error' => $th->getMessage(),
+                ]);
+
+                $this->sleepFor($delay);
             }
         }
-
-        return [];
     }
 
-    private function makeRequest(string $method, string $endpoint, string $params) : array {
+    private function makeRequest(string $method, string $endpoint, array $params) : array {
         $response = FacadesHttp::withHeaders($this->auth->getHeaders())
             ->timeout(self::TIMEOUT_SEC)
-            ->method("{$this->baseUrl}{$endpoint}");
+            ->$method("{$this->baseUrl}{$endpoint}", $params);
 
         return match (true) {
             $response->ok() => $response->json,
@@ -69,6 +96,10 @@ class ApiClient
                 'Unexpected response {$response->status()} from {$endpoint}.'
             ),
         };
+    }
+
+    private function sleepFor(int $milliseconds) : void {
+        usleep($milliseconds * 1000);
     }
 }
 
