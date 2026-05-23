@@ -43,5 +43,14 @@ return [
     'language_code' => [
         'english' => 'en',
         'hindi' => 'hi',
-    ]
+    ],
+
+    'tmdb' => [
+        'base_url' => env('MOVIES_DB_API_BASE_URL_V3'),
+        'api_key' => env('MOVIES_DB_API_KEY'),
+        'language_code' => [
+                'english' => 'en',
+                'hindi' => 'hi',
+            ],
+    ],
 ];
