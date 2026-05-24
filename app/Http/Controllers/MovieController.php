@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Movie;
-use App\Repositories\Interfaces\MoviesRepositoryInterface;
+use App\Services\MovieService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,103 +12,72 @@ class MovieController extends Controller
     use ApiResponse;
 
     public function __construct(
-        protected MoviesRepositoryInterface $repository
+        private readonly MovieService $service,
     ) {}
 
     /**
-     * Returns a list of latest movies
+     * GET /movies/latest/{page?}
+     * Returns latest released movies from DB.
      */
-    public function index(int $page = 1) : JsonResponse
+    public function index(): JsonResponse
     {
-        $movies = $this->repository->getLatestRelease(config('services.language_code.hindi'), $page);
-        if (empty($movies['results'])) {
-            return $this->notFound();
+        $movies = $this->service->getLatest();
+
+        if ($movies->isEmpty()) {
+            return $this->notFound('No latest movies found.');
         }
-        return $this->success(data: $movies, message: "Latest movies");
+
+        return $this->paginated($movies, 'Latest movies');
     }
 
     /**
-     * Return the detials of specific movie.
+     * GET /movies/{id}
+     * Returns details of a single movie by TMDB external ID.
+     * Returns 404 if not found in DB and API is unreachable.
      */
-    public function show(int $id) : JsonResponse
+    public function show(int $id): JsonResponse
     {
-        $movie = $this->repository->getById($id);
+        try {
+            $movie = $this->service->getMovie((string) $id);
+            return $this->success(data: $movie, message: 'Movie details');
 
-        if (empty($movie)) {
-            return $this->notFound();
+        } catch (\RuntimeException $e) {
+            // Thrown by MovieService when movie is missing from DB and API is unreachable
+            return $this->notFound('Movie not found.');
         }
-        return $this->success(data: $movie, message: "Latest movies");
     }
 
     /**
-     * Show the form for creating a new resource.
+     * GET /movies/upcoming/{page?}
+     * Returns upcoming movies — DB first, API fallback.
      */
-    public function upcoming(int $page = 1)
-   {
-        $movies = $this->repository->getUpcoming(config('services.language_code.hindi'), $page);
-        if (empty($movies['results'])) {
-            return $this->notFound(message: "Data not found");
+    public function upcoming(): JsonResponse
+    {
+        $movies = $this->service->getUpcoming();
+
+        if ($movies->isEmpty()) {
+            return $this->notFound('No upcoming movies found.');
         }
-        return $this->success(data: $movies, message: "Upcoming movies list");
+
+        return $this->paginated($movies, 'Upcoming movies');
     }
 
     /**
-     * Show the form for creating a new resource.
+     * GET /movies/search?query=...
+     * Searches movies from DB by title or overview.
      */
-    public function search(Request $request)
+    public function search(Request $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'query' => "required|string|min:1|max:255|regex:/^[A-Za-z0-9() ]+$/s"
-        ],
-        [
-            'query.required' => "Please enter valid search input",
-            'query.string' => "Please enter valid search input",
-            'query.min' => "Please enter valid search input",
-            'query.regex' => "Please enter valid search input",
-            'query.max' => "Please enter input below 255 characters",
+        $validated = $request->validate([
+            'query' => ['required', 'string', 'min:1', 'max:255', 'regex:/^[A-Za-z0-9() ]+$/s'],
+        ], [
+            'query.required' => 'Please enter a valid search input.',
+            'query.regex'    => 'Please enter a valid search input.',
+            'query.max'      => 'Search input must be under 255 characters.',
         ]);
 
-        $list = Movie::select([
-            'title',
-            'poster_path',
-            'release_date',
-            'generes',
-            'original_language'
-            ])
-            ->where('title', "LIKE", "%". $validatedData['query'])
-            ->get();
-    }
+        $movies = $this->service->searchMovies($validated['query']);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Movie $movie)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Movie $movie)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Movie $movie)
-    {
-        //
+        return $this->paginated($movies, 'Search results');
     }
 }

@@ -1,4 +1,5 @@
 <?php
+namespace App\Services\ExternalApi\Http;
 
 use App\Services\ExternalApi\Http\ApiAuthenticator;
 use App\Exceptions\ApiAuthException;
@@ -6,7 +7,6 @@ use App\Exceptions\ApiConnectionException;
 use App\Exceptions\ApiRateLimitException;
 use Illuminate\Support\Facades\Http as FacadesHttp;
 use Illuminate\Support\Facades\Log;
-use League\Uri\Http;
 
 class ApiClient
 {
@@ -78,7 +78,7 @@ class ApiClient
             ->$method("{$this->baseUrl}{$endpoint}", $params);
 
         return match (true) {
-            $response->ok() => $response->json,
+            $response->ok() => $response->json(),
 
             $response->status() === 401 => throw new ApiAuthException(
                 'API returned Unauthorized.'

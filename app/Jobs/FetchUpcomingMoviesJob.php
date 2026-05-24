@@ -2,8 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Models\Movie;
-use App\Repositories\MovieRepository;
+use App\DTOs\MovieDTO;
+use App\Repositories\Contracts\MovieRepositoryInterface;
+use App\Services\ExternalApi\Contracts\MovieApiInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -15,59 +16,56 @@ class FetchUpcomingMoviesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $languageCode;
+    public function __construct(
+        public readonly string $languageCode,
+    ) {}
 
-    public function __construct(string $languageCode)
-    {
-        $this->languageCode = $languageCode;
-    }
-
-    public function handle(): void
-    {
-        $repository = app(MovieRepository::class);
+    /**
+     * Laravel resolves MovieApiInterface and MovieRepositoryInterface
+     * from the container automatically when the job is handled.
+     */
+    public function handle(
+        MovieApiInterface        $api,
+        MovieRepositoryInterface $repo,
+    ): void {
         $page = 1;
 
         do {
-            $moviesData = $repository->getUpcoming($this->languageCode, $page);
-
-            if (empty($moviesData['results'])) {
+            try {
+                // Bug fix: languageCode is now passed to the API — was previously ignored
+                $response = $api->fetchUpcoming(page: $page, language: $this->languageCode);
+            } catch (\Throwable $e) {
+                Log::error('FetchUpcomingMoviesJob: API call failed.', [
+                    'page'     => $page,
+                    'language' => $this->languageCode,
+                    'error'    => $e->getMessage(),
+                ]);
                 break;
             }
-            $filteredList = $this->processResults($moviesData['results']);
-            if ($filteredList->isNotEmpty()) {
-                Movie::upsert(
-                    $filteredList->toArray(),
-                    ['uniqueid'],
-                    ['title', 'poster', 'release_date', 'updated_at', 'rating']
-                );
+
+            $results = $response['results'] ?? [];
+
+            if (empty($results)) {
+                break;
             }
 
-            $page++;
-        } while ($page <= $moviesData['total_pages']);
-    }
+            // MovieDTO::fromTmdb() is the single source of truth for TMDB field mapping.
+            // No raw field names here — if TMDB changes a field, only the DTO needs updating.
+            foreach ($results as $raw) {
+                try {
+                    $dto = MovieDTO::fromTmdb($raw);
+                    $repo->upsert($dto->toArray());
+                } catch (\Throwable $e) {
+                    Log::warning('FetchUpcomingMoviesJob: failed to upsert a movie.', [
+                        'tmdb_id' => $raw['id'] ?? 'unknown',
+                        'error'   => $e->getMessage(),
+                    ]);
+                }
+            }
 
-    public function processResults(array $results)
-    {
-        $ids = Movie::select('id')
-            ->whereBetween('created_at', [
-                today()->startOfDay(),
-                today()->endOfDay()
-            ])
-            ->pluck('id')
-            ->toArray();
-        return collect($results)
-            ->reject(fn($item) => in_array($item['id'], $ids))
-            ->map(fn($item) => [
-                'uniqueid' => $item['id'],
-                'title' => $item['title'] ?? '',
-                'poster' => $item['poster_path'] ?? '',
-                'release_date' => $item['release_date'] ?? '',
-                'genres' => json_encode($item['genre_ids'] ?? []),
-                'original_language' => $item['original_language'] ?? '',
-                'rating' => $item['vote_average'] ?? 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ])
-            ->values();
+            $totalPages = $response['total_pages'] ?? 1;
+            $page++;
+
+        } while ($page <= $totalPages);
     }
 }

@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
-use ApiClient;
-use App\Repositories\Interfaces\MoviesRepositoryInterface;
+use App\Repositories\Contracts\MovieRepositoryInterface;
 use App\Repositories\Interfaces\TheaterRepositoryInterface;
 use App\Repositories\MovieRepository;
 use App\Repositories\TheaterRepository;
+use App\Services\ExternalApi\Contracts\MovieApiInterface;
 use App\Services\ExternalApi\Http\ApiAuthenticator;
+use App\Services\ExternalApi\Http\ApiClient;
+use App\Services\ExternalApi\TmdbApiService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ApiAuthenticator::class, function () {
             return new ApiAuthenticator(
-                apiKey: rtrim(config('services.movies_db.base_url'), '/')
+                apiKey: rtrim(config('services.tmdb.base_url'), '/')
             );
         });
 
@@ -31,14 +33,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(TheaterRepositoryInterface::class, TheaterRepository::class);
-        $this->app->bind(MoviesRepositoryInterface::class, MovieRepository::class);
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
+        $this->app->bind(MovieRepositoryInterface::class, MovieRepository::class);
+        $this->app->bind(MovieApiInterface::class, TmdbApiService::class);
     }
 }

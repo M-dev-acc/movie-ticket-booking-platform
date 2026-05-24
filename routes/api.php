@@ -44,10 +44,8 @@ Route::group([
         Route::controller(MovieController::class)
             ->prefix('movies')
             ->group(function () {
-                Route::get('/latest/{page?}', [MovieController::class, 'index'])
-                    ->where('page', '^[1-9][0-9]*$');
-                Route::get('/upcoming/{page?}', [MovieController::class, 'upcoming'])
-                    ->where('page', '^[1-9][0-9]*$');
+                Route::get('/latest', [MovieController::class, 'index']);
+                Route::get('/upcoming', [MovieController::class, 'upcoming']);
                 Route::get('/{id}', [MovieController::class, 'show'])
                     ->where('id', '[0-9]+');
             });
@@ -56,7 +54,7 @@ Route::group([
     Route::group([
         'middleware' => "role:user",
     ], function () {
-        
+
     });
 
 });

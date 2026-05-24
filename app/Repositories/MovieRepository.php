@@ -2,59 +2,92 @@
 
 namespace App\Repositories;
 
-use App\Repositories\Interfaces\MoviesRepositoryInterface;
-use App\Services\MoviesAPIClient;
+use App\Models\Movie;
+use App\Repositories\Contracts\MovieRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class MovieRepository implements MoviesRepositoryInterface
+class MovieRepository implements MovieRepositoryInterface
 {
-    public function __construct(
-        protected MoviesAPIClient $apiClient = new MoviesAPIClient()
-    ) {}
+    // ── Single record ─────────────────────────────────────────────────────────
 
-    public function getLatestRelease(string $language, int $page = 1) {
-        $request = [
-            'include_adult' => 'true',
-            'include_video' => 'false',
-            'page' => $page,
-            'primary_release_year' => today()->format('Y'),
-            'primary_release_date.gte' => today()->subDays(240)->format('Y-m-d'),
-            'primary_release_date.lte' => today()->format('Y-m-d'),
-            'region' => "ISO 3166-1",
-            'sort_by' => "primary_release_date.desc",
-            'vote_average.gte' => 4,
-            'vote_average.lte' => 10,
-            'with_original_language' => $language,
-            'with_release_type' => '3,2',
-        ];
-        $response = $this->apiClient->get("discover/movie", $request);
-        return ($response['status'] && !empty($response['data'])) ? $response['data'] : [];
+    public function findById(int $id): ?Movie
+    {
+        return Movie::find($id);
     }
 
-    public function getUpcoming(string $language, int $page = 1) {
-        $request = [
-            'include_adult' => 'true',
-            'include_video' => 'false',
-            'page' => $page,
-            'primary_release_year' => today()->format('Y'),
-            'primary_release_date.gte' => today()->format('Y-m-d'),
-            'primary_release_date.lte' => today()->addDays(30)->format('Y-m-d'),
-            'region' => "ISO 3166-1",
-            'sort_by' => "primary_release_date.desc",
-            'with_original_language' => $language,
-            'with_release_type' => 3,
-        ];
-
-        $response = $this->apiClient->get("discover/movie", $request);
-        return ($response['status']) ? $response['data'] : [];
+    public function findByExternalId(string $externalId): ?Movie
+    {
+        return Movie::where('external_id', $externalId)->first();
     }
 
-    public function getById(string $id) {
-        $apiEndPoint = "movie/$id";
-        $response = $this->apiClient->get($apiEndPoint);
-        return ($response['status']) ? $response['data'] : [];
+    // ── Write ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Insert or update by external_id.
+     * Accepts output of MovieDTO::toArray() directly.
+     */
+    public function upsert(array $data): Movie
+    {
+        Movie::updateOrCreate(
+            ['external_id' => $data['external_id']],
+            $data
+        );
+
+        return Movie::where('external_id', $data['external_id'])->first();
     }
 
-    public function filter(array $request) {
-        return $this->apiClient->get("discover/movie", $request);
+    // ── Listings ──────────────────────────────────────────────────────────────
+
+    public function search(string $query, int $perPage = 20): LengthAwarePaginator
+    {
+        return Movie::where('title', 'like', "%{$query}%")
+            ->orWhere('overview', 'like', "%{$query}%")
+            ->orderByDesc('popularity')
+            ->paginate($perPage);
+    }
+
+    public function getLatest(int $perPage = 20): LengthAwarePaginator
+    {
+        return Movie::whereYear('release_date', now()->year)
+            ->where('release_date', '<=', now()->toDateString())
+            ->orderByDesc('release_date')
+            ->paginate($perPage);
+        // return Movie::where('release_date', '<=', now()->toDateString())
+        //     ->orderByDesc('release_date')
+        //     ->paginate($perPage);
+    }
+
+    public function getUpcoming(int $perPage = 20): LengthAwarePaginator
+    {
+        return Movie::where('release_date', '>', now()->toDateString())
+            ->orderBy('release_date')
+            ->paginate($perPage);
+    }
+
+    public function getPopular(int $perPage = 20): LengthAwarePaginator
+    {
+        return Movie::orderByDesc('popularity')
+            ->paginate($perPage);
+    }
+
+    public function getNowPlaying(int $perPage = 20): LengthAwarePaginator
+    {
+        return Movie::whereMonth('release_date', now()->month)
+            ->whereYear('release_date', now()->year)
+            ->orderByDesc('popularity')
+            ->paginate($perPage);
+    }
+
+    // ── Staleness ─────────────────────────────────────────────────────────────
+
+    public function isStale(string $externalId, int $hours = 24): bool
+    {
+        $movie = $this->findByExternalId($externalId);
+
+        if (!$movie || is_null($movie->synced_at)) {
+            return true;
+        }
+
+        return $movie->synced_at->diffInHours(now()) >= $hours;
     }
 }

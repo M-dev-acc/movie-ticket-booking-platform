@@ -1,172 +1,159 @@
 <?php
 
+// Bug fix: moved to Tests\Feature namespace — this test hits the DB
+// via RefreshDatabase and belongs in tests/Feature/, not tests/Unit/
 namespace Tests\Feature;
 
+use App\DTOs\MovieDTO;
 use App\Jobs\FetchUpcomingMoviesJob;
-use App\Repositories\MovieRepository;
+use App\Models\Movie;
+use App\Repositories\Contracts\MovieRepositoryInterface;
+use App\Services\ExternalApi\Contracts\MovieApiInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class FetchUpcomingMoviesJobTest extends TestCase
 {
+    use RefreshDatabase;
+
+    // ── DTO mapping ───────────────────────────────────────────────────────────
+
     /** @test */
-    public function it_can_fetch_movies_from_api()
+    public function it_maps_tmdb_response_correctly_via_dto(): void
     {
-        $repository = app(MovieRepository::class);
-        $moviesData = $repository->getUpcoming('en', 1);
+        $raw = $this->sampleMovie();
+        $dto = MovieDTO::fromTmdb($raw);
 
-        $this->assertIsArray($moviesData);
-        $this->assertArrayHasKey('results', $moviesData);
-        $this->assertNotEmpty($moviesData['results']);
-
-        // Optional: check fields exist
-        $firstMovie = $moviesData['results'][0];
-        $this->assertArrayHasKey('title', $firstMovie);
-        $this->assertArrayHasKey('release_date', $firstMovie);
+        $this->assertEquals('1552794', $dto->externalId);
+        $this->assertEquals('Example title 1', $dto->title);
+        $this->assertEquals('/AlxxkFRBPoPrTphNm0nAEYtmr96.jpg', $dto->posterPath);
+        $this->assertEquals('hi', $dto->originalLanguage);
     }
 
-    /** @test */
-    public function it_processes_api_response_correctly()
-    {
-        $job = new FetchUpcomingMoviesJob('en');
-
-        $sampleApiResponse = $this->fakeResponse();
-
-        $processed = $job->processResults($sampleApiResponse['data']['results']);
-
-        $this->assertNotEmpty($processed);
-        $this->assertEquals('Example title 1', $processed[0]['title']);
-
-        // You can assert that movies with missing data are filtered
-        $this->assertCount(5, $processed); // or whatever your filter logic requires
-    }
-
+    // ── Job handles paginated results ─────────────────────────────────────────
 
     /** @test */
-    public function it_stores_movies_correctly_in_database()
+    public function it_upserts_all_movies_from_api_response(): void
     {
-        $this->assertDatabaseCount('movies', 0);
+        $mockApi = $this->mock(MovieApiInterface::class);
+        $mockApi->shouldReceive('fetchUpcoming')
+            ->once()
+            ->with(page: 1, language: 'hi') // Bug fix: language must match job's languageCode
+            ->andReturn($this->fakeApiResponse());
 
-        $moviesToStore = collect($this->fakeResponse());
-
-        \App\Models\Movie::upsert(
-            $moviesToStore->toArray(),
-            ['uniqueid'],
-            ['title', 'release_date', 'rating']
+        $job = new FetchUpcomingMoviesJob('hi');
+        $job->handle(
+            api:  $mockApi,
+            repo: $this->app->make(MovieRepositoryInterface::class),
         );
 
-        $this->assertDatabaseHas('movies', ['uniqueid' => 1552794, 'title' => "Example title 1"]);
-        $this->assertDatabaseHas('movies', ['uniqueid' => 1486860, 'title' => "Example title 2"]);
-        $this->assertDatabaseHas('movies', ['uniqueid' => 1227739, 'title' => "Example title 3"]);
-        $this->assertDatabaseHas('movies', ['uniqueid' => 1339952, 'title' => "Example Title 4"]);
-        $this->assertDatabaseHas('movies', ['uniqueid' => 1524457, 'title' => "Example title 5"]);
+        $this->assertDatabaseCount('movies', 5);
+        $this->assertDatabaseHas('movies', ['external_id' => '1552794', 'title' => 'Example title 1']);
+        $this->assertDatabaseHas('movies', ['external_id' => '1486860', 'title' => 'Example title 2']);
+        $this->assertDatabaseHas('movies', ['external_id' => '1227739', 'title' => 'Example title 3']);
+        $this->assertDatabaseHas('movies', ['external_id' => '1339952', 'title' => 'Example Title 4']);
+        $this->assertDatabaseHas('movies', ['external_id' => '1524457', 'title' => 'Example title 5']);
     }
 
-    /**
-     * Return fake API response
-     */
-    private function fakeResponse() : array {
+    /** @test */
+    public function it_stops_when_api_returns_empty_results(): void
+    {
+        $mockApi = $this->mock(MovieApiInterface::class);
+        $mockApi->shouldReceive('fetchUpcoming')
+            ->once()
+            ->with(page: 1, language: 'hi')
+            ->andReturn(['results' => [], 'total_pages' => 1]);
+
+        $job = new FetchUpcomingMoviesJob('hi');
+        $job->handle(
+            api:  $mockApi,
+            repo: $this->app->make(MovieRepositoryInterface::class),
+        );
+
+        $this->assertDatabaseCount('movies', 0);
+    }
+
+    /** @test */
+    public function it_skips_and_logs_a_movie_that_fails_to_upsert(): void
+    {
+        $mockApi = $this->mock(MovieApiInterface::class);
+
+        // Bug fix: null title will cause a TypeError inside MovieDTO::fromTmdb()
+        // because $title is typed as non-nullable string.
+        // The job catches \Throwable per movie, logs the warning, and continues —
+        // so the good movie should still be stored.
+        $badMovie  = array_merge($this->sampleMovie(id: 999), ['title' => null]);
+        $goodMovie = $this->sampleMovie(id: 888, title: 'Good movie');
+
+        $mockApi->shouldReceive('fetchUpcoming')
+            ->once()
+            ->with(page: 1, language: 'hi')
+            ->andReturn(['results' => [$badMovie, $goodMovie], 'total_pages' => 1]);
+
+        $job = new FetchUpcomingMoviesJob('hi');
+        $job->handle(
+            api:  $mockApi,
+            repo: $this->app->make(MovieRepositoryInterface::class),
+        );
+
+        // Good movie should be saved despite the bad one throwing
+        $this->assertDatabaseHas('movies', ['external_id' => '888', 'title' => 'Good movie']);
+        // Bad movie should not exist
+        $this->assertDatabaseMissing('movies', ['external_id' => '999']);
+    }
+
+    /** @test */
+    public function it_passes_language_code_to_api(): void
+    {
+        $mockApi = $this->mock(MovieApiInterface::class);
+
+        // Explicitly verifies the languageCode constructor arg flows through to the API call
+        $mockApi->shouldReceive('fetchUpcoming')
+            ->once()
+            ->with(page: 1, language: 'en')
+            ->andReturn(['results' => [], 'total_pages' => 1]);
+
+        $job = new FetchUpcomingMoviesJob('en');
+        $job->handle(
+            api:  $mockApi,
+            repo: $this->app->make(MovieRepositoryInterface::class),
+        );
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function sampleMovie(int $id = 1552794, string $title = 'Example title 1'): array
+    {
         return [
-            "status" => true,
-            "data" => [
-                "page"=> 1,
-                "results"=>  [
-                    [
-                        "adult" => false,
-                        "backdrop_path" => null,
-                        "genre_ids" => [],
-                        "id" => 1552794,
-                        "original_language" => "hi",
-                        "original_title" => "Example title 1",
-                        "overview" => "",
-                        "popularity" => 0.0071,
-                        "poster_path" => "/AlxxkFRBPoPrTphNm0nAEYtmr96.jpg",
-                        "release_date" => "2025-09-26",
-                        "title" => "Example title 1",
-                        "video" => false,
-                        "vote_average" => 0,
-                        "vote_count" => 0,
-                    ],
-                    [
-                        "adult" => false,
-                        "backdrop_path" => null,
-                        "genre_ids" =>  [
-                        27
-                        ],
-                        "id" => 1486860,
-                        "original_language" => "hi",
-                        "original_title" => "Example title 2",
-                        "overview" => "Sequel to the 2011 Indian horror.",
-                        "popularity" => 2.0811,
-                        "poster_path" => null,
-                        "release_date" => "2025-09-26",
-                        "title" => "Example title 2",
-                        "video" => false,
-                        "vote_average" => 0,
-                        "vote_count" => 0,
-                    ],
-                    [
-                        "adult" => false,
-                        "backdrop_path" => "/v9w0xds8GUzOwHTZRuw2yeObRzD.jpg",
-                        "genre_ids" =>  [
-                        18
-                        ],
-                        "id" => 1227739,
-                        "original_language" => "hi",
-                        "original_title" => "Example title 3",
-                        "overview" => "Two childhood friends from a small North Indian village chase a police job that promises them the dignity they’ve long been denied.",
-                        "popularity" => 3.7447,
-                        "poster_path" => "/vyezjSvSdLO0bvr6jSNuFi6yuiw.jpg",
-                        "release_date" => "2025-09-26",
-                        "title" => "Example title 3",
-                        "video" => false,
-                        "vote_average" => 0,
-                        "vote_count" => 0,
-                    ],
-                    [
-                        "adult" => false,
-                        "backdrop_path" => null,
-                        "genre_ids" =>  [
-                        35,
-                        10749,
-                        18,
-                        ],
-                        "id" => 1339952,
-                        "original_language" => "hi",
-                        "original_title" => "Example Title 4",
-                        "overview" => "",
-                        "popularity" => 1.415,
-                        "poster_path" => null,
-                        "release_date" => "2025-09-25",
-                        "title" => "Example Title 4",
-                        "video" => false,
-                        "vote_average" => 0,
-                        "vote_count" => 0,
-                    ],
-                    [
-                        "adult" => false,
-                        "backdrop_path" => null,
-                        "genre_ids" =>  [
-                        10749
-                        ],
-                        "id"=> 1524457,
-                        "original_language" => "hi",
-                        "original_title" => "Example title 5",
-                        "overview" => "Example title 5 Is A Journey Of Love , Acceptance And Self-Discovery",
-                        "popularity" => 0.0764,
-                        "poster_path" => "/lpFxReyBf9CFxWrorE1DjsgL6bh.jpg",
-                        "release_date" => "2025-09-22",
-                        "title" => "Example title 5",
-                        "video" => false,
-                        "vote_average" => 0,
-                        "vote_count" => 0,
-                    ]
-                ],
-                "total_pages"=> 1,
-                "total_results"=> 5,
-            ]
+            'id'                => $id,
+            'title'             => $title,
+            'original_title'    => $title,
+            'original_language' => 'hi',
+            'overview'          => '',
+            'poster_path'       => '/AlxxkFRBPoPrTphNm0nAEYtmr96.jpg',
+            'backdrop_path'     => null,
+            'release_date'      => '2025-09-26',
+            'popularity'        => 0.0071,
+            'vote_average'      => 0,
+            'vote_count'        => 0,
+            'adult'             => false,
+            'genre_ids'         => [],
+        ];
+    }
+
+    private function fakeApiResponse(): array
+    {
+        return [
+            'page'          => 1,
+            'total_pages'   => 1,
+            'total_results' => 5,
+            'results'       => [
+                $this->sampleMovie(1552794, 'Example title 1'),
+                $this->sampleMovie(1486860, 'Example title 2'),
+                $this->sampleMovie(1227739, 'Example title 3'),
+                $this->sampleMovie(1339952, 'Example Title 4'),
+                $this->sampleMovie(1524457, 'Example title 5'),
+            ],
         ];
     }
 }
