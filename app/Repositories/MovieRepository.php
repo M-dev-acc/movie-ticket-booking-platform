@@ -17,23 +17,23 @@ class MovieRepository implements MovieRepositoryInterface
 
     public function findByExternalId(string $externalId): ?Movie
     {
-        return Movie::where('external_id', $externalId)->first();
+        return Movie::where('uniqueid', $externalId)->first();
     }
 
     // ── Write ─────────────────────────────────────────────────────────────────
 
     /**
-     * Insert or update by external_id.
+     * Insert or update by uniqueid.
      * Accepts output of MovieDTO::toArray() directly.
      */
     public function upsert(array $data): Movie
     {
         Movie::updateOrCreate(
-            ['external_id' => $data['external_id']],
+            ['uniqueid' => $data['uniqueid']],
             $data
         );
 
-        return Movie::where('external_id', $data['external_id'])->first();
+        return Movie::where('uniqueid', $data['uniqueid'])->first();
     }
 
     // ── Listings ──────────────────────────────────────────────────────────────
@@ -52,9 +52,6 @@ class MovieRepository implements MovieRepositoryInterface
             ->where('release_date', '<=', now()->toDateString())
             ->orderByDesc('release_date')
             ->paginate($perPage);
-        // return Movie::where('release_date', '<=', now()->toDateString())
-        //     ->orderByDesc('release_date')
-        //     ->paginate($perPage);
     }
 
     public function getUpcoming(int $perPage = 20): LengthAwarePaginator
