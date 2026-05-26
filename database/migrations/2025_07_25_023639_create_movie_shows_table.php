@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('screen_id');
 
             $table->foreign('movie_id')
-                ->references('uniqueid')
+                ->references('external_id')
                 ->on('movies')
                 ->onDelete('cascade');
             $table->foreign('theater_id')
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->foreign('screen_id')
                 ->references('id')
                 ->on('screens');
-            
+
             $table->integer('duration')->unsigned();
             $table->timestamps();
         });

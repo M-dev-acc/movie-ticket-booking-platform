@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('movies', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('uniqueid')->unique();
+            $table->unsignedBigInteger('external_id')->unique();
             $table->string('title');
             $table->string('poster');
             $table->date('release_date');
