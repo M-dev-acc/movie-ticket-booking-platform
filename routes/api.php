@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\MovieController;
+use App\Http\Controllers\ScreenController;
 use App\Http\Controllers\TheaterController;
+use App\Models\Screen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +51,22 @@ Route::group([
                 Route::get('/{id}', [MovieController::class, 'show'])
                     ->where('id', '[0-9]+');
             });
+
+        Route::controller(ScreenController::class)
+            ->prefix('screen')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+');
+                Route::post('/create', 'store')
+                    ->middleware('permission:create screen');
+                Route::patch('/update/{id}', 'update')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:update screen');
+                Route::patch('/delete/{id}', 'destroy')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:delete screen');
+            });
     });
 
     Route::group([
@@ -79,6 +97,22 @@ Route::group([
                     ->middleware('permission:update theater');
             }
         );
+
+        Route::controller(ScreenController::class)
+            ->prefix('screen')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+');
+                Route::post('/create', 'store')
+                    ->middleware('permission:create screen');
+                Route::patch('/update/{id}', 'update')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:update screen');
+                Route::patch('/delete/{id}', 'destroy')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:delete screen');
+            });
     });
 
     Route::group([
@@ -102,6 +136,14 @@ Route::group([
                     ->where('id', '[0-9]+');
             }
         );
+
+        Route::controller(ScreenController::class)
+            ->prefix('screen')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+');
+            });
     });
 
 });
