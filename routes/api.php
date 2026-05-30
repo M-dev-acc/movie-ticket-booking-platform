@@ -30,15 +30,16 @@ Route::group([
             ->group(function () {
                 Route::get('/', 'index');
                 Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+');
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Theater');
                 Route::post('/create', 'store')
-                    ->middleware('permission:create theater');
+                    ->middleware('permission:Create Theater');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:update theater');
+                    ->middleware('permission:Update Theater');
                 Route::delete('/delete/{id}',  'destroy')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:delete theater');
+                    ->middleware('permission:Delete Theater');
             }
         );
 
@@ -57,15 +58,16 @@ Route::group([
             ->group(function () {
                 Route::get('/', 'index');
                 Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+');
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Screen');
                 Route::post('/create', 'store')
-                    ->middleware('permission:create screen');
+                    ->middleware('permission:Create Screen');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:update screen');
+                    ->middleware('permission:Update Screen');
                 Route::patch('/delete/{id}', 'destroy')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:delete screen');
+                    ->middleware('permission:Delete Screen');
             });
     });
 
@@ -89,12 +91,13 @@ Route::group([
             ->group(function () {
                 Route::get('/', 'index');
                 Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+');
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Theater');
                 Route::post('/create', 'store')
-                    ->middleware('permission:create theater');
+                    ->middleware('permission:Create Theater');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:update theater');
+                    ->middleware('permission:Update Theater');
             }
         );
 
@@ -103,15 +106,16 @@ Route::group([
             ->group(function () {
                 Route::get('/', 'index');
                 Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+');
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Screen');
                 Route::post('/create', 'store')
-                    ->middleware('permission:create screen');
+                    ->middleware('permission:Create Screen');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:update screen');
+                    ->middleware('permission:Update Screen');
                 Route::patch('/delete/{id}', 'destroy')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:delete screen');
+                    ->middleware('permission:Delete Screen');
             });
     });
 
@@ -133,7 +137,8 @@ Route::group([
             ->group(function () {
                 Route::get('/', 'index');
                 Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+');
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Theater');
             }
         );
 
@@ -142,7 +147,8 @@ Route::group([
             ->group(function () {
                 Route::get('/', 'index');
                 Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+');
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Screen');
             });
     });
 
