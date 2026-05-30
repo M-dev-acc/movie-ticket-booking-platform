@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MovieShow extends Model
 {
+    protected $fillable = [
+        'movie_id',
+        'theater_id',
+        'screen_id',
+        'duration',
+    ];
+
     public function theater():BelongsTo {
         return $this->belongsTo(Theater::class, 'theater_id');
     }

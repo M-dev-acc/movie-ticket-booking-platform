@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\MovieController;
+use App\Http\Controllers\MovieShowController;
 use App\Http\Controllers\ScreenController;
 use App\Http\Controllers\TheaterController;
 use App\Models\Screen;
@@ -69,6 +70,23 @@ Route::group([
                     ->where('id', '[0-9]+')
                     ->middleware('permission:Delete Screen');
             });
+
+        Route::controller(MovieShowController::class)
+            ->prefix('movie-show')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Movie Show');
+                Route::post('/create', 'store')
+                    ->middleware('permission:Create Movie Show');
+                Route::patch('/update/{id}', 'update')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Update Movie Show');
+                Route::patch('/delete/{id}', 'destroy')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Delete Movie Show');
+            });
     });
 
     Route::group([
@@ -117,6 +135,23 @@ Route::group([
                     ->where('id', '[0-9]+')
                     ->middleware('permission:Delete Screen');
             });
+
+        Route::controller(MovieShowController::class)
+            ->prefix('movie-show')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Movie Show');
+                Route::post('/create', 'store')
+                    ->middleware('permission:Create Movie Show');
+                Route::patch('/update/{id}', 'update')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Update Movie Show');
+                Route::patch('/delete/{id}', 'destroy')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Delete Movie Show');
+            });
     });
 
     Route::group([
@@ -149,6 +184,15 @@ Route::group([
                 Route::get('/{id}', 'show')
                     ->where('id', '[0-9]+')
                     ->middleware('permission:Read Screen');
+            });
+
+        Route::controller(MovieShowController::class)
+            ->prefix('movie-show')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Movie Show');
             });
     });
 
