@@ -2,47 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Screen\StoreScreenRequest;
+use App\Http\Requests\Screen\UpdateScreenRequest;
+use App\Http\Resources\Screen\ScreenResource;
 use App\Models\Screen;
+use App\Repositories\Contracts\ScreenRepositoryInterface;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
 class ScreenController extends Controller
 {
+    use ApiResponse;
+
+    public function __construct(
+        protected ScreenRepositoryInterface $repository,
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
-    public function index(int $theater)
+    public function index(?int $theaterId = null)
     {
-        $list = Screen::where('theater_id', $theater)
-            ->get();
-        if (empty($list)) {
-            return response()->json([
-                'status' => false,
-                'data' => [],
-                'message' => "Data not found!"
-            ], 404);
-        }
+        $list = $this->repository->all($theaterId);
 
-        return response()->json([
-            'status' => true,
-            'data' => $list,
-            'message' => "Theater screen list"
-        ], 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return $this->paginated($list);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreScreenRequest $request)
     {
-        //
+        $screen = $this->repository->create($request->validated());
+        return $this->success(new ScreenResource($screen), message:"New Screen is added.");
     }
 
     /**
@@ -50,23 +42,16 @@ class ScreenController extends Controller
      */
     public function show(Screen $screen)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Screen $screen)
-    {
-        //
+        return $this->success(new ScreenResource($screen), message: "Screen details");
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Screen $screen)
+    public function update(UpdateScreenRequest $request, Screen $screen)
     {
-        //
+        $updatedScreen = $this->repository->update($screen, $request->validated());
+        return $this->success(new ScreenResource($updatedScreen), message:"Screen details are updated.");
     }
 
     /**
@@ -74,6 +59,8 @@ class ScreenController extends Controller
      */
     public function destroy(Screen $screen)
     {
-        //
+        $this->repository->delete($screen);
+
+        return $this->noContent("Screen deleted successfully.");
     }
 }

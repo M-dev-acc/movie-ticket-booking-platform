@@ -46,15 +46,63 @@ Route::group([
             ->group(function () {
                 Route::get('/latest', [MovieController::class, 'index']);
                 Route::get('/upcoming', [MovieController::class, 'upcoming']);
+                Route::get('/search', [MovieController::class, 'search']);
                 Route::get('/{id}', [MovieController::class, 'show'])
                     ->where('id', '[0-9]+');
             });
     });
 
     Route::group([
+        'middleware' => "role:owner",
+    ], function () {
+        Route::get('/', [AuthenticatedSessionController::class, 'loggedUser']);
+
+        Route::controller(MovieController::class)
+            ->prefix('movies')
+            ->group(function () {
+                Route::get('/latest', [MovieController::class, 'index']);
+                Route::get('/upcoming', [MovieController::class, 'upcoming']);
+                Route::get('/search', [MovieController::class, 'search']);
+                Route::get('/{id}', [MovieController::class, 'show'])
+                    ->where('id', '[0-9]+');
+        });
+
+        Route::controller(TheaterController::class)
+            ->prefix('theater')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+');
+                Route::post('/create', 'store')
+                    ->middleware('permission:create theater');
+                Route::patch('/update/{id}', 'update')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:update theater');
+            }
+        );
+    });
+
+    Route::group([
         'middleware' => "role:user",
     ], function () {
+        Route::controller(MovieController::class)
+            ->prefix('movies')
+            ->group(function () {
+                Route::get('/latest', [MovieController::class, 'index']);
+                Route::get('/upcoming', [MovieController::class, 'upcoming']);
+                Route::get('/search', [MovieController::class, 'search']);
+                Route::get('/{id}', [MovieController::class, 'show'])
+                    ->where('id', '[0-9]+');
+        });
 
+        Route::controller(TheaterController::class)
+            ->prefix('theater')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+');
+            }
+        );
     });
 
 });
