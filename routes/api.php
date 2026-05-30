@@ -26,8 +26,7 @@ Route::group([
         Route::controller(TheaterController::class)
             ->prefix('theater')
             ->group(function () {
-                Route::get('/page/{page}', 'index')
-                    ->where('page', '^[1-9][0-9]*$');
+                Route::get('/', 'index');
                 Route::get('/{id}', 'show')
                     ->where('id', '[0-9]+');
                 Route::post('/create', 'store')
