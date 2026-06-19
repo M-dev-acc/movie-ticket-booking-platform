@@ -65,7 +65,7 @@ Route::group([
                     ->middleware('permission:Create Screen');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:Update Screen');
+                    ->middleware('permission:Edit Screen');
                 Route::patch('/delete/{id}', 'destroy')
                     ->where('id', '[0-9]+')
                     ->middleware('permission:Delete Screen');
@@ -82,7 +82,7 @@ Route::group([
                     ->middleware('permission:Create Movie Show');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:Update Movie Show');
+                    ->middleware('permission:Edit Movie Show');
                 Route::patch('/delete/{id}', 'destroy')
                     ->where('id', '[0-9]+')
                     ->middleware('permission:Delete Movie Show');
@@ -115,7 +115,7 @@ Route::group([
                     ->middleware('permission:Create Theater');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:Update Theater');
+                    ->middleware('permission:Edit Theater');
             }
         );
 
@@ -130,7 +130,7 @@ Route::group([
                     ->middleware('permission:Create Screen');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:Update Screen');
+                    ->middleware('permission:Edit Screen');
                 Route::patch('/delete/{id}', 'destroy')
                     ->where('id', '[0-9]+')
                     ->middleware('permission:Delete Screen');
@@ -147,7 +147,7 @@ Route::group([
                     ->middleware('permission:Create Movie Show');
                 Route::patch('/update/{id}', 'update')
                     ->where('id', '[0-9]+')
-                    ->middleware('permission:Update Movie Show');
+                    ->middleware('permission:Edit Movie Show');
                 Route::patch('/delete/{id}', 'destroy')
                     ->where('id', '[0-9]+')
                     ->middleware('permission:Delete Movie Show');

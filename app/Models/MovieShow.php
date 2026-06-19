@@ -11,6 +11,7 @@ class MovieShow extends Model
         'movie_id',
         'theater_id',
         'screen_id',
+        'start_at',
         'duration',
     ];
 

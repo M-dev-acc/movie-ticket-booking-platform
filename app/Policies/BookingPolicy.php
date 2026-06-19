@@ -21,7 +21,7 @@ class BookingPolicy
      */
     public function view(User $user, Booking $booking): bool
     {
-        return false;
+        return $user->id === $booking->user_id;
     }
 
     /**
@@ -29,7 +29,7 @@ class BookingPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole('user');
     }
 
     /**

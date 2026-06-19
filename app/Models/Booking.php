@@ -9,4 +9,15 @@ class Booking extends Model
 {
     /** @use HasFactory<\Database\Factories\BookingFactory> */
     use HasFactory;
+
+    protected array $fillable = [
+        'code',
+        'user_id',
+        'show_id',
+        'movie_id',
+        'booked_at',
+        'status',
+    ];
+
+    
 }
