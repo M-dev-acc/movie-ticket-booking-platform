@@ -13,12 +13,22 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('code')->unique('code');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('show_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('show_id')->references('id')->on('movie_shows')->onDelete('cascade');
-            $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
+            $table->uuid('code');
+            $table->enum('status', [
+                'pending',
+                'reserved',
+                'payment pending',
+                'confirmed',
+                'cancelled',
+                'failed',
+            ])->default('pending');
+            $table->decimal('total_amount', 8, 2)->default(0);
             $table->dateTime('booked_at');
-            $table->string('status');
+            $table->dateTime('confirmed_at')->nullable();
             $table->timestamps();
         });
     }

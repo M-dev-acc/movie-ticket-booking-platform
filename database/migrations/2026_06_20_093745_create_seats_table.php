@@ -13,14 +13,24 @@ return new class extends Migration
     {
         Schema::create('seats', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('screen_id');
             $table->foreign('screen_id')
                 ->references('id')
                 ->on('screens')
                 ->onDelete('cascade');
-            $table->integer('number');
-            $table->string('row');
-            $table->boolean('is_available');
+            $table->char('row', 1);
+            $table->unsignedSmallInteger('number');
+            $table->enum('type', [
+                'standard', 'premium', 'recliner'
+            ]);
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique([
+                'screen_id',
+                'row',
+                'number',
+            ], 'seats_screen_position_unique');
         });
     }
 

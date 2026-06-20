@@ -5,23 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
+use App\Repositories\BookingRepository;
+use App\Traits\ApiResponse;
 
 class BookingController extends Controller
 {
+    use ApiResponse;
+
+    public function __construct(
+        protected BookingRepository $repository,
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $bookings = $this->repository->all();
+        return $this->success($bookings, 'Bookings list');
     }
 
     /**
@@ -29,7 +30,8 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request)
     {
-        //
+        $bookingDetails = $this->repository->create($request->validated());
+        return $this->success($bookingDetails, 'Show booked successfully!');
     }
 
     /**
@@ -37,7 +39,7 @@ class BookingController extends Controller
      */
     public function show(Booking $booking)
     {
-        //
+        return $this->success($booking, 'Booking details');
     }
 
     /**
@@ -53,7 +55,9 @@ class BookingController extends Controller
      */
     public function update(UpdateBookingRequest $request, Booking $booking)
     {
-        //
+        $booking = $this->repository->update($booking, $request->validated());
+
+        return $this->success($booking, 'Booking details updated successfully!');
     }
 
     /**
@@ -61,6 +65,8 @@ class BookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
-        //
+        $this->repository->delete($booking);
+
+        return $this->noContent('Booking cancelled successfully');
     }
 }

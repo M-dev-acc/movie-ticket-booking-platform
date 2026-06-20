@@ -45,7 +45,7 @@ class BookingPolicy
      */
     public function delete(User $user, Booking $booking): bool
     {
-        return false;
+        return $user->id === $booking->user_id;
     }
 
     /**

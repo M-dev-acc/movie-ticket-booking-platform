@@ -24,7 +24,6 @@ class StoreBookingRequest extends FormRequest
         return [
             'user_id' => "required|int|exists:users,id",
             'show_id' => "required|int|exists:shows,id",
-            
         ];
     }
 }

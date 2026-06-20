@@ -29,8 +29,9 @@ return new class extends Migration
                 ->references('id')
                 ->on('screens');
 
-            $table->datetime('start_at');
             $table->integer('duration')->unsigned();
+            $table->decimal('price', 8, 2);
+            $table->datetime('start_at')->nullable();
             $table->timestamps();
         });
     }

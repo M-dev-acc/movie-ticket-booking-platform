@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Models\Theater;
 use App\Repositories\Interfaces\TheaterRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class TheaterRepository implements TheaterRepositoryInterface
