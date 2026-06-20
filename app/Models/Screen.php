@@ -29,6 +29,10 @@ class Screen extends Model
     }
 
     public function shows() : HasMany {
-    return $this->hasMany(MovieShow::class, 'screen_id');
+        return $this->hasMany(MovieShow::class, 'screen_id');
+    }
+
+    public function seats() : HasMany {
+        return $this->hasMany(Seat::class);
     }
 }
