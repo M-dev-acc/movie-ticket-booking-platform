@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Booking;
 
 use App\Http\Resources\MovieShow\MovieShowResource;
+use App\Http\Resources\User\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,7 +23,7 @@ class BookingResource extends JsonResource
             'booked_at' => $this->booked_at,
             'confirmed_at' => $this->confirmed_at,
             'show'  => new MovieShowResource($this->show),
-            'user' => $this->user,
+            'user' => new UserResource($this->user),
         ];
     }
 }
