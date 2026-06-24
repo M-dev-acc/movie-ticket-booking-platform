@@ -22,10 +22,11 @@ class StoreMovieShowRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'movie_id' => "required|int|exists:movies, id",
-            'theater_id' => "required|int|exists:theaters, id",
-            'screen_id' => "required|int|exists:screens, id",
-            'duration' => "required|int",
+            'movie_id' => "required|int|exists:movies,id",
+            'theater_id' => "required|int|exists:theaters,id",
+            'screen_id' => "required|int|exists:screens,id",
+            'duration' => "required|numeric",
+            'price' => "required|numeric|decimal:2",
         ];
     }
 }
