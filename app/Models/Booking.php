@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Permission\Commands\Show;
 
 class Booking extends Model
 {
@@ -25,7 +24,7 @@ class Booking extends Model
     }
 
     public function show() : BelongsTo {
-        return $this->belongsTo(Show::class, 'show_id');
+        return $this->belongsTo(MovieShow::class, 'show_id');
     }
 
     public function movie() : BelongsTo {
