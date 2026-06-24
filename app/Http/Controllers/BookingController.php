@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Http\Requests\StoreBookingRequest;
 use App\Http\Requests\UpdateBookingRequest;
-use App\Repositories\BookingRepository;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Traits\ApiResponse;
 
 class BookingController extends Controller
@@ -13,7 +13,7 @@ class BookingController extends Controller
     use ApiResponse;
 
     public function __construct(
-        protected BookingRepository $repository,
+        protected BookingRepositoryInterface $repository,
     ) {}
 
     /**
