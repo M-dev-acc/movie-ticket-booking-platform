@@ -13,6 +13,11 @@ class MovieShow extends Model
         'screen_id',
         'start_at',
         'duration',
+        'price',
+    ];
+
+    protected $casts = [
+        'start_at' => 'datetime',
     ];
 
     public function theater():BelongsTo {
