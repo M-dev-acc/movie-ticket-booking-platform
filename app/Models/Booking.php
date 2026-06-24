@@ -28,6 +28,6 @@ class Booking extends Model
     }
 
     public function movie() : BelongsTo {
-        return $this->belongsTo(Movie::class, 'movie');
+        return $this->belongsTo(Movie::class, 'movie_id');
     }
 }
