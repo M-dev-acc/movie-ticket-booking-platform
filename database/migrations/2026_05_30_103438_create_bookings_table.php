@@ -30,6 +30,7 @@ return new class extends Migration
             $table->dateTime('booked_at');
             $table->dateTime('confirmed_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
