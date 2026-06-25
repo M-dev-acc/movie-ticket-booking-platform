@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('movie_id');
-            $table->unsignedBigInteger('theater_id');
             $table->unsignedBigInteger('screen_id');
 
             $table->foreign('movie_id')
@@ -31,8 +30,13 @@ return new class extends Migration
 
             $table->integer('duration')->unsigned();
             $table->decimal('price', 8, 2);
-            $table->datetime('start_at')->nullable();
+            $table->datetime('scheduled_at')->nullable();
             $table->timestamps();
+
+            $table->unique([
+                'screen_id',
+                'scheduled_at',
+            ], 'movie_shows_screen_position_unique');
         });
     }
 

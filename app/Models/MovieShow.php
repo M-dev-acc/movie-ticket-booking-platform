@@ -11,18 +11,18 @@ class MovieShow extends Model
         'movie_id',
         'theater_id',
         'screen_id',
-        'start_at',
+        'scheduled_at',
         'duration',
         'price',
     ];
 
     protected $casts = [
-        'start_at' => 'datetime',
+        'scheduled_at' => 'datetime',
     ];
 
-    public function theater():BelongsTo {
-        return $this->belongsTo(Theater::class, 'theater_id');
-    }
+    // public function theater():BelongsTo {
+    //     return $this->belongsTo(Theater::class, 'theater_id');
+    // }
 
     public function screen() : BelongsTo {
         return $this->belongsTo(Screen::class, 'screen_id');
