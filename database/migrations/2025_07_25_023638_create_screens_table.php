@@ -15,10 +15,23 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('theater_id');
 
-            $table->foreign('theater_id')->references('id')->on('theaters');
+            $table->foreign('theater_id')
+                ->references('id')
+                ->on('theaters')
+                ->onDelete('restrict');
             $table->enum('type', [
-                'standard',
+                '2d',
                 '3d',
+                'imax_2d',
+                'imax_3d',
+                'imax_laser_2d',
+                'imax_laser_3d',
+                'pxl_2d',
+                'pxl_3d',
+                '4dx_3d',
+                'screenx_2d',
+                'insignia_2d',
+                'luxe_2d',
             ])->default('standard');
             $table->integer('capacity')->unsigned();
             $table->boolean('status');
