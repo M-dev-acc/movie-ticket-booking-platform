@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('theaters', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 4)->unique();
+            $table->char('code', 5)->unique();
             $table->string('name');
             $table->text('address')->nullable();
+            $table->text('city')->nullable();
             $table->boolean('status');
             $table->timestamps();
         });
