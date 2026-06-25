@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('poster');
             $table->date('release_date');
             $table->json('genres');
-            $table->float('rating')->nullable(true)->default(0);
+            $table->decimal('rating', 3, 1)->nullable(true)->default(0.0);
             $table->string('original_language');
 
             $table->timestamps();
