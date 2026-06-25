@@ -16,11 +16,12 @@ return new class extends Migration
 
             $table->unsignedBigInteger('external_id')->unique();
             $table->string('title');
-            $table->string('poster');
+            $table->string('poster')->nullable(true);
             $table->date('release_date');
             $table->json('genres');
             $table->decimal('rating', 3, 1)->nullable(true)->default(0.0);
             $table->string('original_language');
+            $table->text('overview');
 
             $table->timestamps();
         });
