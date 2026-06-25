@@ -23,6 +23,7 @@ return new class extends Migration
             $table->enum('type', [
                 'standard', 'premium', 'recliner'
             ]);
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
             $table->softDeletes();
 
@@ -31,6 +32,7 @@ return new class extends Migration
                 'row',
                 'number',
             ], 'seats_screen_position_unique');
+            $table->index('screen_id');
         });
     }
 
