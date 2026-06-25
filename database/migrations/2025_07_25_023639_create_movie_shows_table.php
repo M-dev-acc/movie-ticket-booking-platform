@@ -31,12 +31,19 @@ return new class extends Migration
             $table->integer('duration')->unsigned();
             $table->decimal('price', 8, 2);
             $table->datetime('scheduled_at');
+            /**
+             * DATE_ADD(start_at, INTERVAL duration MINUTE)
+             * The column is stored, meaning MySQL physically saves the calculated value in the table rather than calculating it every time you query it.
+             */
+            $table->datetime('end_at')->storedAs('DATE_AT(schedules_at, INTERVAL duration MINUTE)');
             $table->timestamps();
 
             $table->unique([
                 'screen_id',
                 'scheduled_at',
-            ], 'movie_shows_screen_position_unique');
+            ], 'movie_shows_screen_timeslot_unique');
+            $table->index('scheduled_at');
+            $table->index(['scheduled_at', 'schedules_at'], 'show_movie_schedule_index');
         });
     }
 
