@@ -16,7 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('theater_id');
 
             $table->foreign('theater_id')->references('id')->on('theaters');
-            $table->tinyInteger('type')->unsigned();
+            $table->enum('type', [
+                'standard',
+                '3d',
+            ])->default('standard');
             $table->integer('capacity')->unsigned();
             $table->boolean('status');
             $table->timestamps();
