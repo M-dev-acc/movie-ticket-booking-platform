@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('show_id');
+            $table->unsignedBigInteger('movie_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('show_id')->references('id')->on('movie_shows')->onDelete('cascade');
-            $table->uuid('code');
+            $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
+            $table->uuid('code')->unique();
             $table->enum('status', [
                 'pending',
                 'reserved',
@@ -31,6 +33,9 @@ return new class extends Migration
             $table->dateTime('confirmed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('user_id');
+            $table->index(['user_id', 'status'], 'bookings_user_status_index');
         });
     }
 
