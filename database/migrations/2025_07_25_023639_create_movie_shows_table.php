@@ -30,7 +30,7 @@ return new class extends Migration
 
             $table->integer('duration')->unsigned();
             $table->decimal('price', 8, 2);
-            $table->datetime('scheduled_at')->nullable();
+            $table->datetime('scheduled_at');
             $table->timestamps();
 
             $table->unique([
