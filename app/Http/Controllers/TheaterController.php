@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Theater\StoreTheaterRequest;
 use App\Http\Requests\Theater\UpdateTheaterRequest;
 use App\Http\Resources\Theater\TheaterResource;
-use App\Repositories\Interfaces\TheaterRepositoryInterface;
+use App\Models\Theater;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -13,16 +13,12 @@ class TheaterController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(
-        protected TheaterRepositoryInterface $repository
-    ) {}
-
     /**
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
     {
-        $list = $this->repository->all();
+        $list = Theater::latest()->paginate(20);
 
         return $this->paginated(
             $list,
@@ -36,35 +32,37 @@ class TheaterController extends Controller
      */
     public function store(StoreTheaterRequest $request): JsonResponse
     {
-        $theater = $this->repository->create($request->validated());
+        $theater = Theater::create($request->validated());
         return $this->created(new TheaterResource($theater), message: "Theater added successfully.");
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id): JsonResponse
+    public function show(Theater $theater)
     {
-        $theater = $this->repository->find($id);
         return $this->success(new TheaterResource($theater), message: "Theater details");
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTheaterRequest $request, int $id): JsonResponse
+    public function update(UpdateTheaterRequest $request, Theater $theater): JsonResponse
     {
-        $theater = $this->repository->update($id, $request->validated());
+        $theater->update($request->validated());
 
-        return $this->success(new TheaterResource($theater), message: "Theater update successfully.");
+        return $this->success(
+            new TheaterResource($theater->fresh()),
+            message: "Theater update successfully."
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Theater $theater)
     {
-        $this->repository->delete($id);
+        $theater->delete();
 
         return $this->noContent("Theater deleted successfully.");
     }

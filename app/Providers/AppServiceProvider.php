@@ -6,9 +6,7 @@ use App\Repositories\BookingRepository;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\MovieRepositoryInterface;
 use App\Repositories\Contracts\MovieShowRepositoryInterface;
-use App\Repositories\Interfaces\TheaterRepositoryInterface;
 use App\Repositories\MovieRepository;
-use App\Repositories\TheaterRepository;
 use App\Services\ExternalApi\Contracts\MovieApiInterface;
 use App\Services\ExternalApi\Http\ApiAuthenticator;
 use App\Services\ExternalApi\Http\ApiClient;
@@ -38,7 +36,6 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->bind(TheaterRepositoryInterface::class, TheaterRepository::class);
         $this->app->bind(MovieRepositoryInterface::class, MovieRepository::class);
         $this->app->bind(MovieApiInterface::class, TmdbApiService::class);
         $this->app->bind(ScreenRepositoryInterface::class, ScreenRepository::class);
