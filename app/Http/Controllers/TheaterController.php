@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Theater\StoreTheaterRequest;
-use App\Http\Requests\Theater\UpdateTheaterRequest;
+use App\Http\Requests\Theater\{
+    StoreTheaterRequest,
+    UpdateTheaterRequest
+};
 use App\Http\Resources\Theater\TheaterResource;
 use App\Models\Theater;
 use App\Traits\ApiResponse;
@@ -60,7 +62,7 @@ class TheaterController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Theater $theater)
+    public function destroy(Theater $theater): JsonResponse
     {
         $theater->delete();
 
