@@ -3,51 +3,42 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use App\Http\Requests\StoreBookingRequest;
-use App\Http\Requests\UpdateBookingRequest;
-use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Http\Requests\{
+    StoreBookingRequest,
+    UpdateBookingRequest
+};
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class BookingController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(
-        protected BookingRepositoryInterface $repository,
-    ) {}
-
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        $bookings = $this->repository->all();
-        return $this->success($bookings, 'Bookings list');
+        $bookings = Booking::latest()
+            ->paginate(20);
+        return $this->success($bookings, message: 'Bookings list');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBookingRequest $request)
+    public function store(StoreBookingRequest $request): JsonResponse
     {
-        $bookingDetails = $this->repository->create($request->validated());
-        return $this->success($bookingDetails, 'Show booked successfully!');
+        $bookingDetails = Booking::create($request->validated());
+        return $this->success($bookingDetails, message: 'Show booked successfully!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Booking $booking)
+    public function show(Booking $booking): JsonResponse
     {
-        return $this->success($booking, 'Booking details');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Booking $booking)
-    {
-        //
+        return $this->success($booking, message: 'Booking details');
     }
 
     /**
@@ -55,9 +46,9 @@ class BookingController extends Controller
      */
     public function update(UpdateBookingRequest $request, Booking $booking)
     {
-        $booking = $this->repository->update($booking, $request->validated());
+        $booking->update($request->validated());
 
-        return $this->success($booking, 'Booking details updated successfully!');
+        return $this->success($booking->fresh(), message: 'Booking details updated successfully!');
     }
 
     /**
@@ -65,7 +56,7 @@ class BookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
-        $this->repository->delete($booking);
+        $booking->delete();
 
         return $this->noContent('Booking cancelled successfully');
     }

@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Repositories\BookingRepository;
-use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\MovieRepositoryInterface;
 use App\Repositories\MovieRepository;
 use App\Services\ExternalApi\Contracts\MovieApiInterface;
@@ -34,6 +32,5 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(MovieRepositoryInterface::class, MovieRepository::class);
         $this->app->bind(MovieApiInterface::class, TmdbApiService::class);
-        $this->app->bind(BookingRepositoryInterface::class, BookingRepository::class);
     }
 }
