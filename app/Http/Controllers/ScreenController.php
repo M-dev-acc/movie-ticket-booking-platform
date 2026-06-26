@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Screen\StoreScreenRequest;
-use App\Http\Requests\Screen\UpdateScreenRequest;
+use App\Http\Requests\Screen\{
+    StoreScreenRequest,
+    UpdateScreenRequest
+};
 use App\Http\Resources\Screen\ScreenResource;
 use App\Models\Screen;
-use App\Repositories\Contracts\ScreenRepositoryInterface;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 

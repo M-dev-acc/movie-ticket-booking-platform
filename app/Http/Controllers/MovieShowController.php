@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\MovieShow\StoreMovieShowRequest;
-use App\Http\Requests\MovieShow\UpdateMovieShowRequest;
+use App\Http\Requests\MovieShow\{
+    StoreMovieShowRequest,
+    UpdateMovieShowRequest
+};
 use App\Http\Resources\MovieShow\MovieShowResource;
 use App\Models\MovieShow;
 use App\Traits\ApiResponse;
