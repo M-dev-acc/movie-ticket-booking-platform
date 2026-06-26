@@ -6,35 +6,33 @@ use App\Http\Requests\MovieShow\StoreMovieShowRequest;
 use App\Http\Requests\MovieShow\UpdateMovieShowRequest;
 use App\Http\Resources\MovieShow\MovieShowResource;
 use App\Models\MovieShow;
-use App\Repositories\Contracts\MovieShowRepositoryInterface;
 use App\Traits\ApiResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class MovieShowController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(
-        protected MovieShowRepositoryInterface $repository,
-    ) {}
-
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
+        $list =  MovieShow::latest()
+            ->paginate(20);
+
         return $this->paginated(
-            $this->repository->all(),
-            "Movie Show list"
+            $list,
+            "Movie Shows list"
         );
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreMovieShowRequest $request)
+    public function store(StoreMovieShowRequest $request): JsonResponse
     {
-        $movieShow = $this->repository->create($request->validated());
+        $movieShow = MovieShow::create($request->validated());
         return $this->success(
             data: new MovieShowResource($movieShow),
             message: "Movie show added successfully!",
@@ -44,7 +42,7 @@ class MovieShowController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(MovieShow $movieShow)
+    public function show(MovieShow $movieShow): JsonResponse
     {
         return $this->success(
             data: new MovieShowResource($movieShow),
@@ -55,11 +53,11 @@ class MovieShowController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateMovieShowRequest $request, MovieShow $movieShow)
+    public function update(UpdateMovieShowRequest $request, MovieShow $movieShow): JsonResponse
     {
-        $movieShow = $this->repository->update($movieShow, $request->validated());
+        $movieShow->update($request->validated());
         return $this->success(
-            data: new MovieShowResource($movieShow),
+            data: new MovieShowResource($movieShow->fresh()),
             message: "Movie details update successfully!",
         );
     }
@@ -67,9 +65,9 @@ class MovieShowController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(MovieShow $movieShow)
+    public function destroy(MovieShow $movieShow): JsonResponse
     {
-        $this->repository->delete($movieShow);
+        $movieShow->delete();
 
         return $this->noContent("Movie show deleted successfully!");
     }
