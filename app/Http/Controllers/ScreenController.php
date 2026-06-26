@@ -8,22 +8,20 @@ use App\Http\Resources\Screen\ScreenResource;
 use App\Models\Screen;
 use App\Repositories\Contracts\ScreenRepositoryInterface;
 use App\Traits\ApiResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ScreenController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(
-        protected ScreenRepositoryInterface $repository,
-    ) {}
-
     /**
      * Display a listing of the resource.
      */
-    public function index(?int $theaterId = null)
+    public function index(?int $theaterId = null): JsonResponse
     {
-        $list = $this->repository->all($theaterId);
+        $list = Screen::latest()
+            ->when($theaterId, fn($query) => $query->where('theater_id', $theaterId))
+            ->paginate(20);
 
         return $this->paginated($list);
     }
@@ -31,16 +29,16 @@ class ScreenController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreScreenRequest $request)
+    public function store(StoreScreenRequest $request): JsonResponse
     {
-        $screen = $this->repository->create($request->validated());
+        $screen = Screen::create($request->validated());
         return $this->success(new ScreenResource($screen), message:"New Screen is added.");
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Screen $screen)
+    public function show(Screen $screen): JsonResponse
     {
         return $this->success(new ScreenResource($screen), message: "Screen details");
     }
@@ -48,18 +46,21 @@ class ScreenController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateScreenRequest $request, Screen $screen)
+    public function update(UpdateScreenRequest $request, Screen $screen): JsonResponse
     {
-        $updatedScreen = $this->repository->update($screen, $request->validated());
-        return $this->success(new ScreenResource($updatedScreen), message:"Screen details are updated.");
+        $screen->update($request->validated());
+        return $this->success(
+            new ScreenResource($screen->fresh()),
+            message:"Screen details are updated."
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Screen $screen)
+    public function destroy(Screen $screen): JsonResponse
     {
-        $this->repository->delete($screen);
+        $screen->delete();
 
         return $this->noContent("Screen deleted successfully.");
     }

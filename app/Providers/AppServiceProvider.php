@@ -12,9 +12,7 @@ use App\Services\ExternalApi\Http\ApiAuthenticator;
 use App\Services\ExternalApi\Http\ApiClient;
 use App\Services\ExternalApi\TmdbApiService;
 use Illuminate\Support\ServiceProvider;
-use App\Repositories\Contracts\ScreenRepositoryInterface;
 use App\Repositories\MovieShowRepository;
-use App\Repositories\ScreenRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,7 +36,6 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(MovieRepositoryInterface::class, MovieRepository::class);
         $this->app->bind(MovieApiInterface::class, TmdbApiService::class);
-        $this->app->bind(ScreenRepositoryInterface::class, ScreenRepository::class);
         $this->app->bind(MovieShowRepositoryInterface::class, MovieShowRepository::class);
         $this->app->bind(BookingRepositoryInterface::class, BookingRepository::class);
     }
