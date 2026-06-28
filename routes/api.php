@@ -38,23 +38,6 @@ Route::group([
                     ->where('id', '[0-9]+');
             });
 
-        Route::controller(ScreenController::class)
-            ->prefix('screen')
-            ->group(function () {
-                Route::get('/', 'index');
-                Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+')
-                    ->middleware('permission:Read Screen');
-                Route::post('/create', 'store')
-                    ->middleware('permission:Create Screen');
-                Route::patch('/update/{id}', 'update')
-                    ->where('id', '[0-9]+')
-                    ->middleware('permission:Edit Screen');
-                Route::patch('/delete/{id}', 'destroy')
-                    ->where('id', '[0-9]+')
-                    ->middleware('permission:Delete Screen');
-            });
-
         Route::controller(MovieShowController::class)
             ->prefix('movie-show')
             ->group(function () {

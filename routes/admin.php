@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ScreenController;
 use App\Http\Controllers\Admin\TheaterController as AdminTheaterController;
 use App\Http\Controllers\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
@@ -30,5 +31,22 @@ Route::group(
                         ->middleware('permission:Delete Theater');
                 }
             );
+
+        Route::controller(ScreenController::class)
+            ->prefix('screen')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{id}', 'show')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Read Screen');
+                Route::post('/create', 'store')
+                    ->middleware('permission:Create Screen');
+                Route::patch('/update/{id}', 'update')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Edit Screen');
+                Route::patch('/delete/{id}', 'destroy')
+                    ->where('id', '[0-9]+')
+                    ->middleware('permission:Delete Screen');
+            });
     }
 );
