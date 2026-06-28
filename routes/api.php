@@ -37,23 +37,6 @@ Route::group([
                 Route::get('/{id}', [MovieController::class, 'show'])
                     ->where('id', '[0-9]+');
             });
-
-        Route::controller(MovieShowController::class)
-            ->prefix('movie-show')
-            ->group(function () {
-                Route::get('/', 'index');
-                Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+')
-                    ->middleware('permission:Read Movie Show');
-                Route::post('/create', 'store')
-                    ->middleware('permission:Create Movie Show');
-                Route::patch('/update/{id}', 'update')
-                    ->where('id', '[0-9]+')
-                    ->middleware('permission:Edit Movie Show');
-                Route::patch('/delete/{id}', 'destroy')
-                    ->where('id', '[0-9]+')
-                    ->middleware('permission:Delete Movie Show');
-            });
     });
 
     Route::group([
