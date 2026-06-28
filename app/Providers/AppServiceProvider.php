@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ApiAuthenticator::class, function () {
             return new ApiAuthenticator(
-                apiKey: rtrim(config('services.tmdb.base_url'), '/')
+                apiKey: config('services.tmdb.api_key')
             );
         });
 
