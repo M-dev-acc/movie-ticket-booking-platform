@@ -7,5 +7,11 @@ use Illuminate\Http\Request;
 
 class SeatController extends Controller
 {
-
+    /**
+     * Display the specified resource.
+     */
+    public function show(Seat $seat)
+    {
+        //
+    }
 }
