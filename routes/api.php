@@ -15,6 +15,16 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 
+Route::controller(MovieController::class)
+    ->prefix('movies')
+    ->group(function () {
+        Route::get('/latest', [MovieController::class, 'index']);
+        Route::get('/upcoming', [MovieController::class, 'upcoming']);
+        Route::get('/search', [MovieController::class, 'search']);
+        Route::get('/{id}', [MovieController::class, 'show'])
+            ->whereNumber('id');
+    });
+
 Route::group([
     'middleware' => "auth:sanctum",
     'prefix' => 'v1'
@@ -23,36 +33,9 @@ Route::group([
     require __DIR__ . '/admin.php';
 
     Route::group([
-        'middleware' => "role:admin",
-        'prefix' => "admin"
-    ], function () {
-        Route::get('/', [AuthenticatedSessionController::class, 'loggedUser']);
-
-        Route::controller(MovieController::class)
-            ->prefix('movies')
-            ->group(function () {
-                Route::get('/latest', [MovieController::class, 'index']);
-                Route::get('/upcoming', [MovieController::class, 'upcoming']);
-                Route::get('/search', [MovieController::class, 'search']);
-                Route::get('/{id}', [MovieController::class, 'show'])
-                    ->where('id', '[0-9]+');
-            });
-    });
-
-    Route::group([
         'middleware' => "role:owner",
     ], function () {
         Route::get('/', [AuthenticatedSessionController::class, 'loggedUser']);
-
-        Route::controller(MovieController::class)
-            ->prefix('movies')
-            ->group(function () {
-                Route::get('/latest', [MovieController::class, 'index']);
-                Route::get('/upcoming', [MovieController::class, 'upcoming']);
-                Route::get('/search', [MovieController::class, 'search']);
-                Route::get('/{id}', [MovieController::class, 'show'])
-                    ->where('id', '[0-9]+');
-        });
 
         Route::controller(TheaterController::class)
             ->prefix('theater')
@@ -107,15 +90,6 @@ Route::group([
     Route::group([
         'middleware' => "role:user",
     ], function () {
-        Route::controller(MovieController::class)
-            ->prefix('movies')
-            ->group(function () {
-                Route::get('/latest', [MovieController::class, 'index']);
-                Route::get('/upcoming', [MovieController::class, 'upcoming']);
-                Route::get('/search', [MovieController::class, 'search']);
-                Route::get('/{id}', [MovieController::class, 'show'])
-                    ->where('id', '[0-9]+');
-        });
 
         Route::controller(TheaterController::class)
             ->prefix('theater')

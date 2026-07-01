@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
 Route::group(
     [
         'middleware' => [
-            "auth:sanctum",
             "role:admin"
         ],
         'prefix' => "admin"
@@ -18,7 +17,7 @@ Route::group(
         Route::get('/', [AuthenticatedSessionController::class, 'loggedUser']);
 
         Route::controller(AdminTheaterController::class)
-            ->prefix('theater')
+            ->prefix('theaters')
             ->group(
                 function () {
                     Route::get('/', 'index');
@@ -34,36 +33,30 @@ Route::group(
             );
 
         Route::controller(ScreenController::class)
-            ->prefix('screen')
+            ->prefix('screens')
             ->group(function () {
                 Route::get('/', 'index');
-                Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+')
+                Route::get('/{screen}', 'show')
                     ->middleware('permission:Read Screen');
                 Route::post('/create', 'store')
                     ->middleware('permission:Create Screen');
-                Route::patch('/update/{id}', 'update')
-                    ->where('id', '[0-9]+')
+                Route::patch('/update/{screen}', 'update')
                     ->middleware('permission:Edit Screen');
-                Route::patch('/delete/{id}', 'destroy')
-                    ->where('id', '[0-9]+')
+                Route::patch('/delete/{screen}', 'destroy')
                     ->middleware('permission:Delete Screen');
             });
 
         Route::controller(MovieShowController::class)
-            ->prefix('movie-show')
+            ->prefix('movie-shows')
             ->group(function () {
                 Route::get('/', 'index');
-                Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+')
+                Route::get('/{movie_show}', 'show')
                     ->middleware('permission:Read Movie Show');
                 Route::post('/create', 'store')
                     ->middleware('permission:Create Movie Show');
-                Route::patch('/update/{id}', 'update')
-                    ->where('id', '[0-9]+')
+                Route::patch('/update/{movie_show}', 'update')
                     ->middleware('permission:Edit Movie Show');
-                Route::patch('/delete/{id}', 'destroy')
-                    ->where('id', '[0-9]+')
+                Route::patch('/delete/{movie_show}', 'destroy')
                     ->middleware('permission:Delete Movie Show');
             });
     }
