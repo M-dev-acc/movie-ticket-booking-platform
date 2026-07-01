@@ -1,19 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\TheaterController as AdminTheaterController;
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\MovieShowController;
 use App\Http\Controllers\ScreenController;
-use App\Models\Screen;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-/**
- * Authentication routes
- */
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 
 Route::controller(MovieController::class)
     ->prefix('movies')
@@ -22,13 +13,17 @@ Route::controller(MovieController::class)
         Route::get('/upcoming', [MovieController::class, 'upcoming']);
         Route::get('/search', [MovieController::class, 'search']);
         Route::get('/{id}', [MovieController::class, 'show'])
-            ->whereNumber('id');
-    });
+        ->whereNumber('id');
+        });
+
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
 Route::group([
     'middleware' => "auth:sanctum",
     'prefix' => 'v1'
 ], function () {
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+    Route::get('/user', [AuthenticatedSessionController::class, 'loggedUser']);
 
     require __DIR__ . '/admin.php';
 

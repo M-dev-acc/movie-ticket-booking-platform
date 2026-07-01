@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\MovieShowController;
-use App\Http\Controllers\Admin\ScreenController;
-use App\Http\Controllers\Admin\TheaterController as AdminTheaterController;
-use App\Http\Controllers\AuthenticatedSessionController;
+use App\Http\Controllers\Admin\{
+    MovieShowController,
+    ScreenController,
+    TheaterController
+};
 use Illuminate\Support\Facades\Route;
 
 Route::group(
@@ -14,9 +15,8 @@ Route::group(
         'prefix' => "admin"
     ],
     function () {
-        Route::get('/', [AuthenticatedSessionController::class, 'loggedUser']);
 
-        Route::controller(AdminTheaterController::class)
+        Route::controller(TheaterController::class)
             ->prefix('theaters')
             ->group(
                 function () {
