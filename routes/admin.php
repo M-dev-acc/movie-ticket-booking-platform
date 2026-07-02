@@ -12,38 +12,48 @@ Route::group(
         'middleware' => [
             "role:admin"
         ],
-        'prefix' => "admin"
+        'prefix' => "admin",
+        'as' => "admin",
     ],
     function () {
 
         Route::controller(TheaterController::class)
             ->prefix('theaters')
+            ->as('theaters')
             ->group(
                 function () {
                     Route::get('/', 'index');
-                    Route::get('/{theater}', 'show')
-                        ->middleware('permission:Read Theater');
                     Route::post('/create', 'store')
                         ->middleware('permission:Create Theater');
-                    Route::patch('/update/{theater}', 'update')
+                    Route::get('/{theater}', 'show')
+                        ->middleware('permission:Read Theater');
+                    Route::patch('/{theater}/update', 'update')
                         ->middleware('permission:Edit Theater');
-                    Route::delete('/delete/{theater}', 'destroy')
+                    Route::delete('/{theater}/delete', 'destroy')
                         ->middleware('permission:Delete Theater');
                 }
             );
 
         Route::controller(ScreenController::class)
-            ->prefix('screens')
+            ->prefix('theaters/{theater}/screens')
+            ->as('.screens')
             ->group(function () {
                 Route::get('/', 'index');
-                Route::get('/{screen}', 'show')
-                    ->middleware('permission:Read Screen');
                 Route::post('/create', 'store')
+                    ->name('create')
                     ->middleware('permission:Create Screen');
-                Route::patch('/update/{screen}', 'update')
-                    ->middleware('permission:Edit Screen');
-                Route::patch('/delete/{screen}', 'destroy')
-                    ->middleware('permission:Delete Screen');
+                Route::get('/{screen}', 'show')
+                    ->name('show')
+                    ->middleware('permission:Read Screen')
+                    ->scopeBindings();
+                Route::patch('/{screen}/update', 'update')
+                    ->name('update')
+                    ->middleware('permission:Edit Screen')
+                    ->scopeBindings();
+                Route::delete('/{screen}/delete', 'destroy')
+                    ->name('destroy')
+                    ->middleware('permission:Delete Screen')
+                    ->scopeBindings();
             });
 
         Route::controller(MovieShowController::class)

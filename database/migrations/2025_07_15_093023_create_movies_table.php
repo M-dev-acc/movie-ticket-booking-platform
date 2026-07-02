@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('external_id')->unique();
             $table->string('title');
-            $table->string('poster')->nullable(true);
+            $table->string('poster_path')->nullable(true);
             $table->date('release_date');
             $table->json('genres');
             $table->decimal('rating', 3, 1)->nullable(true)->default(0.0);
@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('overview');
 
             $table->timestamps();
+            $table->fullText('title', 'movie_title_fulltext');
         });
     }
 

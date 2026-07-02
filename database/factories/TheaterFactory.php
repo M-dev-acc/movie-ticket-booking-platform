@@ -21,7 +21,7 @@ class TheaterFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company . 'Theater',
+            'name' => $this->faker->company . ' Theater',
             'code' => Str::upper(Str::random(4)),
             'address' => $this->faker->address,
             'status' => true,

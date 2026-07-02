@@ -21,9 +21,7 @@ return new class extends Migration
                 ->references('id')
                 ->on('movies')
                 ->onDelete('cascade');
-            $table->foreign('theater_id')
-                ->references('id')
-                ->on('theaters');
+
             $table->foreign('screen_id')
                 ->references('id')
                 ->on('screens');
@@ -35,7 +33,7 @@ return new class extends Migration
              * DATE_ADD(start_at, INTERVAL duration MINUTE)
              * The column is stored, meaning MySQL physically saves the calculated value in the table rather than calculating it every time you query it.
              */
-            $table->datetime('end_at')->storedAs('DATE_AT(schedules_at, INTERVAL duration MINUTE)');
+            $table->datetime('end_at');
             $table->timestamps();
 
             $table->unique([
@@ -43,7 +41,7 @@ return new class extends Migration
                 'scheduled_at',
             ], 'movie_shows_screen_timeslot_unique');
             $table->index('scheduled_at');
-            $table->index(['scheduled_at', 'schedules_at'], 'show_movie_schedule_index');
+            $table->index(['screen_id', 'scheduled_at'], 'show_movie_schedule_index');
         });
     }
 

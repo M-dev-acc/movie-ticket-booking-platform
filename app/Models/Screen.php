@@ -41,6 +41,7 @@ class Screen extends Model
 
     protected $fillable = [
         'theater_id',
+        'name',
         'type',
         'capacity',
         'status',
@@ -50,6 +51,10 @@ class Screen extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+    ];
+
+    protected $with = [
+        'theater'
     ];
 
     public function theater(): BelongsTo {

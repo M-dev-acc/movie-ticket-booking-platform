@@ -19,6 +19,7 @@ return new class extends Migration
                 ->references('id')
                 ->on('theaters')
                 ->onDelete('restrict');
+            $table->string('name');
             $table->enum('type', [
                 '2d',
                 '3d',
@@ -37,6 +38,7 @@ return new class extends Migration
             $table->boolean('status');
             $table->timestamps();
             $table->softDeletes();
+            $table->unique(['theater_id', 'name'], 'screens_theater_name_unique');
         });
     }
 

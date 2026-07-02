@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Screen;
 
+use App\Models\Screen;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreScreenRequest extends FormRequest
 {
@@ -22,8 +24,8 @@ class StoreScreenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'theater_id' => "required|int|exists:theaters, id",
-            'type' => "required|string|in:premium, immersive, luxury, standard",
+            'name' => "required|string|max:255",
+            'type' => ["required", "string", Rule::in(Screen::TYPES)],
             'capacity' => "required|int|min:30|max:1000",
             'status' => "required|boolean",
         ];

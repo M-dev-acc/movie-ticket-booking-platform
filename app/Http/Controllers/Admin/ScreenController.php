@@ -9,6 +9,7 @@ use App\Http\Requests\Screen\{
 };
 use App\Http\Resources\Screen\ScreenResource;
 use App\Models\Screen;
+use App\Models\Theater;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -19,28 +20,34 @@ class ScreenController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(?int $theaterId = null): JsonResponse
+    public function index(Theater $theater): JsonResponse
     {
         $list = Screen::latest()
-            ->when($theaterId, fn($query) => $query->where('theater_id', $theaterId))
+            ->without('theaters')
+            ->when($theater->id, fn($query) => $query->where('theater_id', $theater->id))
             ->paginate(20);
 
-        return $this->paginated($list);
+        return $this->paginated(
+            $list,
+            resourceClass: ScreenResource::class
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreScreenRequest $request): JsonResponse
+    public function store(Theater $theater, StoreScreenRequest $request): JsonResponse
     {
-        $screen = Screen::create($request->validated());
+        $inputs = $request->validated();
+        $inputs['theater_id'] = $theater->id;
+        $screen = Screen::create($inputs);
         return $this->success(new ScreenResource($screen), message:"New Screen is added.");
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Screen $screen): JsonResponse
+    public function show(Theater $theater, Screen $screen): JsonResponse
     {
         return $this->success(new ScreenResource($screen), message: "Screen details");
     }
@@ -48,7 +55,7 @@ class ScreenController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateScreenRequest $request, Screen $screen): JsonResponse
+    public function update(UpdateScreenRequest $request, Theater $theater, Screen $screen): JsonResponse
     {
         $screen->update($request->validated());
         return $this->success(
@@ -60,7 +67,7 @@ class ScreenController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Screen $screen): JsonResponse
+    public function destroy(Theater $theater, Screen $screen): JsonResponse
     {
         $screen->delete();
 

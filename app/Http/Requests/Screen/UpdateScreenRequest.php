@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Screen;
 
+use App\Models\Screen;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateScreenRequest extends FormRequest
 {
@@ -22,10 +24,10 @@ class UpdateScreenRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'theater_id' => "required|int|exists:theaters, id",
-            'type' => "string|in:premium, immersive, luxury, standard",
-            'capacity' => "int|min:30|max:1000",
-            'status' => "boolean",
+            'name' => "sometimes|filled|string|max:255",
+            'type' => ["sometimes", "filled", "string", Rule::in(Screen::TYPES)],
+            'capacity' => "sometimes|integer|min:30|max:1000",
+            'status' => "sometimes|boolean",
         ];
     }
 }
