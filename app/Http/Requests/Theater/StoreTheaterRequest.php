@@ -24,7 +24,7 @@ class StoreTheaterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'alpha_num', 'size:4', 'unique:theaters'],
+            'code' => ['required', 'alpha_num', 'size:5', 'unique:theaters'],
             'name' => ['required', 'string', 'min:8', 'max:255', 'regex:/^[A-Za-z0-9() ]+$/s'],
             'address' => ['required', 'string', 'regex:/^[A-Za-z0-9() ,\-]+$/s'],
             'status' => ['required', 'boolean']

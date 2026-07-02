@@ -24,9 +24,9 @@ class UpdateTheaterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:8', 'max:255', 'regex:/^[A-Za-z0-9() ]+$/s'],
-            'address' => ['required', 'string', 'regex:/^[A-Za-z0-9() ,\-]+$/s'],
-            'status' => ['required', 'boolean']
+            'name' => ['sometimes', 'filled', 'string', 'min:8', 'max:255', 'regex:/^[A-Za-z0-9() ]+$/s'],
+            'address' => ['sometimes', 'filled', 'string', 'regex:/^[A-Za-z0-9() ,\-]+$/s'],
+            'status' => ['sometimes', 'boolean']
         ];
     }
 

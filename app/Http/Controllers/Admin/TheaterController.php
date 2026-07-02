@@ -53,7 +53,6 @@ class TheaterController extends Controller
     public function update(UpdateTheaterRequest $request, Theater $theater): JsonResponse
     {
         $theater->update($request->validated());
-
         return $this->success(
             new TheaterResource($theater->fresh()),
             message: "Theater update successfully."
