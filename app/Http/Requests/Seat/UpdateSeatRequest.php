@@ -24,7 +24,7 @@ class UpdateSeatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ["sometimes", "filled", Rule::in(Seat::TYPES)],
+            'type' => ["sometimes", "filled", "string", Rule::in(Seat::TYPES)],
             'is_active' => ["sometimes", "boolean"],
         ];
     }

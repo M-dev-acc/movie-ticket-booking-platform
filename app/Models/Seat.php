@@ -26,7 +26,12 @@ class Seat extends Model
         'screen_id',
         'number',
         'row',
-        'is_available',
+        'type',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function screen() : BelongsTo {

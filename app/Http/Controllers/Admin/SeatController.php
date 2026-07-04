@@ -28,6 +28,7 @@ class SeatController extends Controller
         $seatsCollection = $screen->seats()
             ->orderBy('row')
             ->orderBy('number')
+            ->without('screen')
             ->paginate(20);
 
         return $this->paginated(
@@ -73,10 +74,12 @@ class SeatController extends Controller
      */
     public function update(UpdateSeatRequest $request, Theater $theater, Screen $screen, Seat $seat)
     {
+        // dd($request->validated());
         $seat->update($request->validated());
+        $seat->refresh();
 
         return $this->success(
-            new SeatResource($seat->refresh()),
+            new SeatResource($seat),
             message: "Seat details updated successfully!"
         );
     }
