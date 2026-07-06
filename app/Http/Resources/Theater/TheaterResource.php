@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Theater;
 
+use App\Http\Resources\User\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,6 +22,12 @@ class TheaterResource extends JsonResource
             'address' => $this->address,
             'status' => $this->status,
             'created_at' => $this->created_at->toIso8601String(),
+            $this->mergeWhen(
+                $request->route()->named('admin.theater-owners'),
+                [
+                    'owners' => UserResource::collection($this->whenLoaded('owners')),
+                ]
+            ),
         ];
     }
 }

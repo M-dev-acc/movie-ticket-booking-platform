@@ -3,8 +3,10 @@
 use App\Http\Controllers\Admin\{
     ScreenController,
     TheaterController,
-    SeatController
+    SeatController,
+    TheaterOwnerController
 };
+use Illuminate\Routing\RouteBinding;
 use Illuminate\Support\Facades\Route;
 
 Route::group(
@@ -76,6 +78,16 @@ Route::group(
                 Route::delete('/{seat}/delete', 'destroy')
                     ->name('.destroy')
                     ->middleware('permission:Delete Screen');
+            });
+
+        Route::controller(TheaterOwnerController::class)
+            ->prefix('theaters/{theater}/owners')
+            ->middleware('role:admin')
+            ->as('.theater-owners')
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::post('/assign', 'store');
+                Route::delete('/{user}/revoke', 'destroy');
             });
     }
 );
