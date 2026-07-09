@@ -2,14 +2,14 @@
 
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\Owner\{
-    TheaterController,
+    ScreenController, TheaterController,
 };
 use Illuminate\Support\Facades\Route;
 
 Route::group([
         'middleware' => "role:owner",
         'prefix' => "owner",
-        'as' => ".owner"
+        'as' => "owner"
     ], function () {
         Route::get('/', [AuthenticatedSessionController::class, 'loggedUser']);
 
@@ -27,5 +27,25 @@ Route::group([
                     ->middleware('permission:Edit Theater');
             }
         );
+
+        Route::controller(ScreenController::class)
+            ->prefix('theaters/{theater}/screens')
+            ->as('.screens')
+            ->scopeBindings()
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::post('/create', 'store')
+                    ->name('.create')
+                    ->middleware('permission:Create Screen');
+                Route::get('/{screen}', 'show')
+                    ->name('.show')
+                    ->middleware('permission:Read Screen');
+                Route::patch('/{screen}/update', 'update')
+                    ->name('.update')
+                    ->middleware('permission:Edit Screen');
+                Route::delete('/{screen}/delete', 'destroy')
+                    ->name('.destroy')
+                    ->middleware('permission:Delete Screen');
+            });
 
     });

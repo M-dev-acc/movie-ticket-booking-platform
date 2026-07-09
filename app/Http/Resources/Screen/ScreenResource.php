@@ -15,7 +15,6 @@ class ScreenResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // dd($request->route()->getName());
         return [
             "id" => $this->id,
             "name" => $this->name,
