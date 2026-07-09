@@ -8,8 +8,11 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Exceptions\UnauthorizedException;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\{
+    AccessDeniedHttpException,
+    MethodNotAllowedHttpException,
+    NotFoundHttpException
+};
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -63,6 +66,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'You are not authorized to perform this action.',
                 'errors'  => null,
             ], 403);
+        });
+
+        // ── 403 Laravel Gate/Policy check failed ────────────────────────────
+        // Fired by $this->authorize() in controllers.
+        $exceptions->render(function (AccessDeniedHttpException $exception) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated. Mere angane mai tumhara kya kam hai?',
+                'errors'  => null,
+            ], 401);
         });
 
         // ── 404 Model not found ──────────────────────────────────────────────
