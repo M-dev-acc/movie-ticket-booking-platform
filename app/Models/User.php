@@ -52,7 +52,7 @@ class User extends Authenticatable
     public function theater(): BelongsToMany
     {
         return $this->belongsToMany(Theater::class, 'theater_owners')
-            ->withPivot('assigned_by', 'assigned_at')
+            ->withPivot('assigned_by')
             ->withTimestamps();
     }
 }
