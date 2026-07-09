@@ -21,7 +21,7 @@ Route::group(
 
         Route::controller(TheaterController::class)
             ->prefix('theaters')
-            ->as('theaters')
+            ->as('.theaters')
             ->group(
                 function () {
                     Route::get('/', 'index');
@@ -86,8 +86,10 @@ Route::group(
             ->as('.theater-owners')
             ->group(function () {
                 Route::get('/', 'index');
-                Route::post('/assign', 'store');
-                Route::delete('/{user}/revoke', 'destroy');
+                Route::post('/assign', 'store')
+                    ->name('.store');
+                Route::delete('/{user}/revoke', 'destroy')
+                    ->name('.destroy');
             });
     }
 );
