@@ -14,6 +14,7 @@ use App\Http\Requests\Seat\{
 };
 use App\Http\Resources\Seat\SeatResource;
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SeatController extends Controller
@@ -23,7 +24,7 @@ class SeatController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Theater $theater, Screen $screen)
+    public function index(Theater $theater, Screen $screen): JsonResponse
     {
         $seatsCollection = $screen->seats()
             ->orderBy('row')
@@ -40,7 +41,7 @@ class SeatController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSeatRequest $request, Theater $theater, Screen $screen)
+    public function store(StoreSeatRequest $request, Theater $theater, Screen $screen): JsonResponse
     {
         $now = now();
         $seats = collect($request->validated('seats'))
@@ -64,7 +65,7 @@ class SeatController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Theater $theater, Screen $screen, Seat $seat)
+    public function show(Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
         return $this->success(new SeatResource($seat), message: "Seat details");
     }
@@ -87,9 +88,9 @@ class SeatController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Theater $theater, Screen $screen, Seat $seat)
+    public function destroy(Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
         $seat->delete();
-        $this->noContent("Seat deleted successfully!");
+        return $this->noContent("Seat deleted successfully!");
     }
 }

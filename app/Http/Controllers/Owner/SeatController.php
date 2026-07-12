@@ -14,6 +14,7 @@ use App\Http\Requests\Seat\{
 };
 use App\Http\Resources\Seat\SeatResource;
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SeatController extends Controller
@@ -23,7 +24,7 @@ class SeatController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Theater $theater, Screen $screen)
+    public function index(Theater $theater, Screen $screen): JsonResponse
     {
         $this->authorize('viewAny', $screen);
 
@@ -42,7 +43,7 @@ class SeatController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSeatRequest $request, Theater $theater, Screen $screen)
+    public function store(StoreSeatRequest $request, Theater $theater, Screen $screen): JsonResponse
     {
         $this->authorize('create', Seat::class);
 
@@ -68,7 +69,7 @@ class SeatController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Theater $theater, Screen $screen, Seat $seat)
+    public function show(Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
         $this->authorize('view', $seat);
 
@@ -78,7 +79,7 @@ class SeatController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSeatRequest $request, Theater $theater, Screen $screen, Seat $seat)
+    public function update(UpdateSeatRequest $request, Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
         $this->authorize('update', $seat);
 
@@ -94,11 +95,11 @@ class SeatController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Theater $theater, Screen $screen, Seat $seat)
+    public function destroy(Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
         $this->authorize('delete', $seat);
 
         $seat->delete();
-        $this->noContent("Seat deleted successfully!");
+        return $this->noContent("Seat deleted successfully!");
     }
 }
