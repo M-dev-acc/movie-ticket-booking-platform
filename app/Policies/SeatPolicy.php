@@ -79,8 +79,8 @@ class SeatPolicy
     private function isOwnerOf(Seat $seat, User $user) : bool {
         return $seat->screen
             ?->theater
-            ?->owners
-            ?->contains('id', $user->id) ??
-            false;
+            ?->owners()
+            ?->wherePivot('user_id', $user->id)
+            ?->exists();
     }
 }

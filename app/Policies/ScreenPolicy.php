@@ -77,8 +77,10 @@ class ScreenPolicy
     }
 
     private function isOwnerOf(Screen $screen, User $user) : bool {
-        return $screen->theater->owners
-            ->where('id', $user->id)
-            ->isNotEmpty();
+
+        return $screen->theater
+            ?->owners()
+            ?->wherePivot('user_id', $user->id)
+            ?->exists();
     }
 }
