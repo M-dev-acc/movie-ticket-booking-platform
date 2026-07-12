@@ -33,7 +33,7 @@ return new class extends Migration
                 'screenx_2d',
                 'insignia_2d',
                 'luxe_2d',
-            ])->default('standard');
+            ])->default('2d');
             $table->integer('capacity')->unsigned();
             $table->boolean('status');
             $table->timestamps();
