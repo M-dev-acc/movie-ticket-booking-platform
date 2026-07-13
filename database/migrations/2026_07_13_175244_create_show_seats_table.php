@@ -26,7 +26,7 @@ return new class extends Migration
 
             $table->foreign('show_id')
                 ->references('id')
-                ->on('shows')
+                ->on('movie_shows')
                 ->onDelete('restrict');
             $table->foreign('seat_id')
                 ->references('id')
