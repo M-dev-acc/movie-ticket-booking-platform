@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Movie extends Model
 {
     protected $fillable = [
+        'external_id',
         'title',
-        'poster',
+        'poster_path',
         'release_date',
         'genres',
+        'rating',
         'original_language',
+        'overview',
     ];
 
     protected $casts = [

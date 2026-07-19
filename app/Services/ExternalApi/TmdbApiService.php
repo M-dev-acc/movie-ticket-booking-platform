@@ -40,9 +40,15 @@ class TmdbApiService implements MovieApiInterface
      */
     public function fetchUpcoming(int $page = 1, string $language = 'en'): array
     {
-        return $this->client->get('/movie/upcoming', [
+        return $this->client->get('discover/movie', [
+            'primary_release_date.gte' => now()->format('Y-m-d'),
+            // 'primary_release_date.lte' => now()->addDays(30)->format('Y-m-d'),
             'page'     => $page,
             'language' => $language,
+            'region' => 'IN',
+            'with_original_language' => $language,
+            'with_release_type' => '2|3',
+            'sort_by' => 'popularity.desc',
         ]);
     }
 

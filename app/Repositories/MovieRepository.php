@@ -17,7 +17,7 @@ class MovieRepository implements MovieRepositoryInterface
 
     public function findByExternalId(string $externalId): ?Movie
     {
-        return Movie::where('uniqueid', $externalId)->first();
+        return Movie::where('external_id', $externalId)->first();
     }
 
     // ── Write ─────────────────────────────────────────────────────────────────
@@ -29,11 +29,11 @@ class MovieRepository implements MovieRepositoryInterface
     public function upsert(array $data): Movie
     {
         Movie::updateOrCreate(
-            ['uniqueid' => $data['uniqueid']],
+            ['external_id' => $data['external_id']],
             $data
         );
 
-        return Movie::where('uniqueid', $data['uniqueid'])->first();
+        return Movie::where('external_id', $data['external_id'])->first();
     }
 
     // ── Listings ──────────────────────────────────────────────────────────────

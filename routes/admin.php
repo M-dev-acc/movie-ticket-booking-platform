@@ -1,12 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\{
+    MovieShowController,
     ScreenController,
     TheaterController,
     SeatController,
     TheaterOwnerController
 };
-use Illuminate\Routing\RouteBinding;
 use Illuminate\Support\Facades\Route;
 
 Route::group(
@@ -82,7 +82,6 @@ Route::group(
 
         Route::controller(TheaterOwnerController::class)
             ->prefix('theaters/{theater}/owners')
-            ->middleware('role:admin')
             ->as('.theater-owners')
             ->group(function () {
                 Route::get('/', 'index');
@@ -90,6 +89,26 @@ Route::group(
                     ->name('.store');
                 Route::delete('/{user}/revoke', 'destroy')
                     ->name('.destroy');
+            });
+
+        Route::controller(SeatController::class)
+            ->prefix('theaters/{theater}/movie-shows')
+            ->as('.movie-shows')
+            ->scopeBindings()
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::post('/create', 'store')
+                    ->name('.create')
+                    ->middleware('permission:Create Movie Show');
+                Route::get('/{movie_show}', 'show')
+                    ->name('.show')
+                    ->middleware('permission:Read Movie Show');
+                Route::patch('/{movie_show}/update', 'update')
+                    ->name('.update')
+                    ->middleware('permission:Edit Movie Show');
+                Route::delete('/{movie_show}/delete', 'destroy')
+                    ->name('.destroy')
+                    ->middleware('permission:Delete Movie Show');
             });
     }
 );

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ExternalApi\Contracts\MovieApiInterface;
 use App\Services\MovieService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,7 @@ class MovieController extends Controller
 
     public function __construct(
         private readonly MovieService $service,
+        private readonly MovieApiInterface $api,
     ) {}
 
     /**
@@ -22,10 +24,6 @@ class MovieController extends Controller
     public function index(): JsonResponse
     {
         $movies = $this->service->getLatest();
-
-        if ($movies->isEmpty()) {
-            return $this->notFound('No latest movies found.');
-        }
 
         return $this->paginated($movies, 'Latest movies');
     }
