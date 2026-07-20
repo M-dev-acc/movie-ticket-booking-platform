@@ -91,7 +91,7 @@ Route::group(
                     ->name('.destroy');
             });
 
-        Route::controller(SeatController::class)
+        Route::controller(MovieShowController::class)
             ->prefix('theaters/{theater}/movie-shows')
             ->as('.movie-shows')
             ->scopeBindings()

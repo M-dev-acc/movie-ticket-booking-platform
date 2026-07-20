@@ -3,6 +3,7 @@
 namespace App\Http\Requests\MovieShow;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreMovieShowRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class StoreMovieShowRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->user()->hasRole('admin') || auth()->user()->hasRole('owner');
     }
 
     /**
@@ -23,10 +24,22 @@ class StoreMovieShowRequest extends FormRequest
     {
         return [
             'movie_id' => "required|int|exists:movies,id",
-            'theater_id' => "required|int|exists:theaters,id",
             'screen_id' => "required|int|exists:screens,id",
             'duration' => "required|numeric",
             'price' => "required|numeric|decimal:2",
+            'scheduled_at' => "required|date|after_or_equal:now",
         ];
     }
+
+    // public function after() : array {
+    //     return [
+    //         function (Validator $validator) {
+    //             // Check is show timing overlapping
+    //         },
+
+    //         function (Validator $validator) {
+    //             // Check is show duration more than movie
+    //         },
+    //     ];
+    // }
 }

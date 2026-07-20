@@ -9,6 +9,7 @@ use App\Http\Requests\MovieShow\{
 };
 use App\Http\Resources\MovieShow\MovieShowResource;
 use App\Models\MovieShow;
+use App\Models\Theater;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -19,9 +20,10 @@ class MovieShowController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Theater $theater): JsonResponse
     {
-        $list =  MovieShow::latest()
+        $list =  $theater->shows()
+            ->latest()
             ->paginate(20);
 
         return $this->paginated(
@@ -33,9 +35,10 @@ class MovieShowController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreMovieShowRequest $request): JsonResponse
+    public function store(Theater $theater, StoreMovieShowRequest $request): JsonResponse
     {
-        $movieShow = MovieShow::create($request->validated());
+        $data = $request->validated();
+        $movieShow = MovieShow::create($data);
         return $this->success(
             data: new MovieShowResource($movieShow),
             message: "Movie show added successfully!",
