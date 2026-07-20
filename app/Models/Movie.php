@@ -18,7 +18,7 @@ class Movie extends Model
     ];
 
     protected $casts = [
-        'geners' => 'array',
+        'genres' => 'array',
         'release_date' => 'datetime',
     ];
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MovieResource;
 use App\Services\ExternalApi\Contracts\MovieApiInterface;
 use App\Services\MovieService;
 use App\Traits\ApiResponse;
@@ -25,7 +26,10 @@ class MovieController extends Controller
     {
         $movies = $this->service->getLatest();
 
-        return $this->paginated($movies, 'Latest movies');
+        return $this->paginated(
+            paginator: $movies,
+            message: 'Latest movies',
+            resourceClass: MovieResource::class);
     }
 
     /**
@@ -53,11 +57,10 @@ class MovieController extends Controller
     {
         $movies = $this->service->getUpcoming();
 
-        if ($movies->isEmpty()) {
-            return $this->notFound('No upcoming movies found.');
-        }
-
-        return $this->paginated($movies, 'Upcoming movies');
+        return $this->paginated(
+            paginator: $movies,
+            message: 'Upcoming movies',
+            resourceClass: MovieResource::class);
     }
 
     /**

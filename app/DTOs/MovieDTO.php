@@ -26,7 +26,7 @@ readonly class MovieDTO
         return new self(
             externalId: (string) $data['id'],
             title: ($data['title']),
-            posterPath: $data['poster_ path'] ?? null,
+            posterPath: $data['poster_path'] ?? null,
             releaseDate: self::parseDate($data['release_date'] ?? null),
             genres: $data['genre_ids'] ?? [],
             rating: isset($data['vote_average']) ? (float) $data['vote_average'] : null,
@@ -47,7 +47,7 @@ readonly class MovieDTO
             'title' => $this->title,
             'poster_path' => $this->posterPath,
             'release_date' => $this->releaseDate?->toDateString(),
-            'geners' => $this->genres,
+            'genres' => $this->genres,
             'rating' => $this->rating,
             'original_language' => $this->originalLanguage,
             'overview' => $this->overview,
