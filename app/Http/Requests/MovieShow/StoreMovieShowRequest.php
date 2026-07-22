@@ -34,11 +34,15 @@ class StoreMovieShowRequest extends FormRequest
     // public function after() : array {
     //     return [
     //         function (Validator $validator) {
-    //             // Check is show timing overlapping
+    //             # Check is show timing overlapping
     //         },
 
     //         function (Validator $validator) {
-    //             // Check is show duration more than movie
+    //             # Check is show duration more than movie
+    //         },
+
+    //         function (Validator $validator) {
+    //             # Check is screen related to the theater
     //         },
     //     ];
     // }

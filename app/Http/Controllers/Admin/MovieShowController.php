@@ -27,8 +27,9 @@ class MovieShowController extends Controller
             ->paginate(20);
 
         return $this->paginated(
-            $list,
-            "Movie Shows list"
+            paginator: $list,
+            message: "Movie Shows list",
+            resourceClass: MovieShowResource::class
         );
     }
 
@@ -37,8 +38,7 @@ class MovieShowController extends Controller
      */
     public function store(Theater $theater, StoreMovieShowRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $movieShow = MovieShow::create($data);
+        $movieShow = MovieShow::create($request->validated);
         return $this->success(
             data: new MovieShowResource($movieShow),
             message: "Movie show added successfully!",

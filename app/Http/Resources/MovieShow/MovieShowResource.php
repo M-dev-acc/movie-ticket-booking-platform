@@ -18,9 +18,12 @@ class MovieShowResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'scheduled_at' => $this->scheduled_at->format('Y-m-d H:i:s'),
+            'end_at' => $this->end_at,
             'duration' => $this->duration,
+            'created_at' => $this->created_at->toIso8601String(),
+            'updated_at' => $this->updated_at->toIso8601String(),
             'movie' => $this->movie,
-            'theater' => new TheaterResource($this->theater),
             'screen' => new ScreenResource($this->screen),
         ];
     }
