@@ -38,7 +38,7 @@ class MovieShowController extends Controller
      */
     public function store(Theater $theater, StoreMovieShowRequest $request): JsonResponse
     {
-        $movieShow = MovieShow::create($request->validated);
+        $movieShow = MovieShow::create($request->validated());
         return $this->success(
             data: new MovieShowResource($movieShow),
             message: "Movie show added successfully!",

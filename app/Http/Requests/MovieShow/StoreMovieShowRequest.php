@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\MovieShow;
 
+use App\Models\MovieShow;
+use App\Models\Screen;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -31,19 +33,67 @@ class StoreMovieShowRequest extends FormRequest
         ];
     }
 
-    // public function after() : array {
-    //     return [
-    //         function (Validator $validator) {
-    //             # Check is show timing overlapping
-    //         },
+    /**
+     * Determine custom validation rules that apply after validating the request.
+     *
+     * @return (callable(Validator ):void)[]
+     */
+    public function after(): array
+    {
+        return [
+            /**
+             * Check is screen related to selected theater
+             */
+            function (Validator $validator) {
+                $screen = Screen::find($this->screen_id);
+                $theaterId = $this->route('theater');
 
-    //         function (Validator $validator) {
-    //             # Check is show duration more than movie
-    //         },
+                if (!$screen || !$theaterId) {
+                    return;
+                }
 
-    //         function (Validator $validator) {
-    //             # Check is screen related to the theater
-    //         },
-    //     ];
-    // }
+                if ((int) $screen->theater_id !== (int) $theaterId) {
+                    $validator->errors()
+                        ->add(
+                            'screen_id',
+                            'The selected screen doe not belongs to this theater.'
+                        );
+                }
+            },
+
+            /**
+             * Check is scheduled slot overlapping
+             */
+            function (Validator $validator) {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                $scheduledAt = $this->scheduled_at;
+                $endAt = now()->parse($scheduledAt)->addMinutes($this->duration);
+
+                $overlap = MovieShow::where('screen_id', $this->screen_id)
+                    ->where(function ($query) use ($scheduledAt, $endAt) {
+                        $query->whereBetween('scheduled_at', [$scheduledAt, $endAt])
+                            ->orWhereBetween('end_at', [$scheduledAt, $endAt])
+                            ->orWhere(function ($q) use ($scheduledAt, $endAt) {
+                                $q->where('scheduled_at', '<=', $scheduledAt)
+                                    ->where('end_at', '>=', $endAt);
+                            });
+                    })->exists();
+                if ($overlap) {
+                    $validator->errors()
+                        ->add(
+                            'scheduled_at',
+                            'This screen alread has a show during this time slot.'
+                        );
+                }
+            },
+
+            // function (Validator $validator) {
+            //     # Check is show duration more than movie
+            // },
+
+        ];
+    }
 }
