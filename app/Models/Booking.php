@@ -7,18 +7,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-    protected array $fillable = [
+    protected $fillable = [
         'user_id',
         'show_id',
+        'movie_id',
         'booked_at',
         'status',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Booking $booking) {
+            $booking->code = Str::uuid();
+            $booking->booked_at = now();
+        });
+    }
 
     public function user() : BelongsTo {
         return $this->belongsTo(User::class, 'user_id');

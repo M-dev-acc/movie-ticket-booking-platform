@@ -22,8 +22,8 @@ class BookingResource extends JsonResource
             'total_amount' => $this->total_amount,
             'booked_at' => $this->booked_at,
             'confirmed_at' => $this->confirmed_at,
-            'show'  => new MovieShowResource($this->show),
             'user' => new UserResource($this->user),
+            'show'  => new MovieShowResource($this->show),
         ];
     }
 }

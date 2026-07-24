@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\MovieShow;
 
+use App\Http\Resources\MovieResource;
 use App\Http\Resources\Screen\ScreenResource;
 use App\Http\Resources\Theater\TheaterResource;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class MovieShowResource extends JsonResource
             'duration' => $this->duration,
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
-            'movie' => $this->movie,
+            'movie' => new MovieResource($this->movie),
             'screen' => new ScreenResource($this->screen),
         ];
     }

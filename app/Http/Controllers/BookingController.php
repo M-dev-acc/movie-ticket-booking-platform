@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Booking\BookingResource;
 use App\Models\Booking;
 use App\Http\Requests\{
     StoreBookingRequest,
     UpdateBookingRequest
 };
+use App\Services\BookingService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 class BookingController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(
+        private BookingService $service
+    ) {
+    }
 
     /**
      * Display a listing of the resource.
@@ -29,8 +36,12 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request): JsonResponse
     {
-        $bookingDetails = Booking::create($request->validated());
-        return $this->success($bookingDetails, message: 'Show booked successfully!');
+        $data = $this->service->formatBookingData($request->validated());
+        // dd($data);
+        $bookingDetails = Booking::create($data);
+        return $this->success(
+            data: new BookingResource($bookingDetails),
+            message: 'Show booked successfully!');
     }
 
     /**
@@ -38,7 +49,9 @@ class BookingController extends Controller
      */
     public function show(Booking $booking): JsonResponse
     {
-        return $this->success($booking, message: 'Booking details');
+        return $this->success(
+            new BookingResource($booking),
+            message: 'Booking details');
     }
 
     /**
