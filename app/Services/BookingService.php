@@ -4,14 +4,13 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\MovieShow;
-use App\Models\Seat;
 use App\Models\ShowSeat;
-use Illuminate\Validation\ValidationException;
 
 class BookingService
 {
-    public function areSeatsAvailable(array $ids) : bool {
-        return ShowSeat::whereIn('id', $ids)
+    public function areSeatsAvailable(int $showId, array $seatIds) : bool {
+        return ShowSeat::whereIn('seat_id', $seatIds)
+            ->where('show_id', $showId)
             ->where('status', 'available')
             ->exists();
     }

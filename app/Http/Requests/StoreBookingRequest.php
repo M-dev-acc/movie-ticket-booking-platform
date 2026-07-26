@@ -31,8 +31,8 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'show_id' => "required|int|exists:movie_shows,id",
-            'seats' => "required|array",
-            'seats.*id' => "required|interger|exists:seats,id",
+            'seats' => "required|array|min:1",
+            'seats.*.id' => "required|interger|exists:seats,id",
         ];
     }
 
@@ -40,8 +40,9 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             function (Validator $validator) {
-                if ($this->bookingService
+                if (!$this->bookingService
                     ->areSeatsAvailable(
+                        $this->integer('show_id'),
                         collect($this->input('seats'))
                             ->pluck('id')
                             ->toArray()
