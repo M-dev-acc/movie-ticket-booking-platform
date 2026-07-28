@@ -20,8 +20,8 @@ return new class extends Migration
                 'locked',
                 'booked',
             ])->default('available');
-            $table->decimal('price', 8, 2);
-            $table->timestamp('locked_until');
+            $table->decimal('price', 8, 2)->default(0);
+            $table->timestamp('locked_until')->nullable();
             $table->timestamps();
 
             $table->foreign('show_id')

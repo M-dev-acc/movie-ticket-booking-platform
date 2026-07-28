@@ -36,9 +36,7 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request): JsonResponse
     {
-        $data = $this->service->formatBookingData($request->validated());
-        // dd($data);
-        $bookingDetails = Booking::create($data);
+        $bookingDetails = $this->service->createBooking($request->validated());
         return $this->success(
             data: new BookingResource($bookingDetails),
             message: 'Show booked successfully!');
