@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\MovieShow;
+use App\Observers\MovieShowObserver;
 use App\Repositories\Contracts\MovieRepositoryInterface;
 use App\Repositories\MovieRepository;
 use App\Services\ExternalApi\Contracts\MovieApiInterface;
@@ -32,5 +34,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(MovieRepositoryInterface::class, MovieRepository::class);
         $this->app->bind(MovieApiInterface::class, TmdbApiService::class);
+    }
+
+    public function boot(): void
+    {
+        MovieShow::observe(MovieShowObserver::class);
     }
 }

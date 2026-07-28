@@ -18,6 +18,10 @@ class ShowSeat extends Model
         'price',
     ];
 
+    protected $casts = [
+        'locked_until' => 'datetime',
+    ];
+
     public function show(): BelongsTo
     {
         return $this->belongsTo(Show::class);

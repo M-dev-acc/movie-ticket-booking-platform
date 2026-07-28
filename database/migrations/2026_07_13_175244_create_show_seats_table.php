@@ -27,11 +27,11 @@ return new class extends Migration
             $table->foreign('show_id')
                 ->references('id')
                 ->on('movie_shows')
-                ->onDelete('restrict');
+                ->onDelete('cascade');
             $table->foreign('seat_id')
                 ->references('id')
                 ->on('seats')
-                ->onDelete('restrict');
+                ->onDelete('cascade');
             $table->unique(
                 ['show_id', 'seat_id'],
                 'show_seats_availabilty_unique'
