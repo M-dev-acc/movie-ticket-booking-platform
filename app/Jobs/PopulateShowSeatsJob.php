@@ -15,7 +15,8 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
-    public int $reties = 3;
+    public int $tries = 3;
+    public array $backoff = [30, 60, 120]; // seconds between retries
 
     /**
      * Create a new job instance.
@@ -25,7 +26,7 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
     ) {
     }
 
-    public function unique(): string {
+    public function uniqueId(): string {
         return $this->show->id;
     }
 
@@ -35,15 +36,18 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
     public function handle(): void
     {
         $seats = Seat::select(['id', 'type'])
-            ->where('screen_id', $this->show->screen->id)
+            ->where('screen_id', $this->show->screen_id)
             ->where('is_active', true)
             ->get();
         if ($seats->isEmpty()) {
-            Log::warning('This screen does not have any seats assigned.');
+            Log::warning('PopulateShowSeatsJob: screen has no active seats.', [
+                'show_id' => $this->show->id,
+                'screen_id' => $this->show->screen_id,
+            ]);
             return;
         }
 
-        $groups = $seats->mapToGroups(function (Seat $seat, int $key) {
+        $groups = $seats->mapToGroups(function (Seat $seat) {
             return [
                 $seat['type'] => [
                     'show_id' => $this->show->id,
