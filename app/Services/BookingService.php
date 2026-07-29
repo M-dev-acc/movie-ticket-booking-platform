@@ -13,17 +13,17 @@ class BookingService
 {
     public function createBooking(array $inputs): Booking
     {
-        $inputs = collect($inputs);
         DB::beginTransaction();
         try {
-            $seats = $this->getShowSeatsById(
-                $inputs->show_id,
-                $inputs->pluck('seats.id')->toArray());
+            $showSeats = $this->getShowSeatsById(
+                $inputs['show_id'],
+                data_get($inputs, 'seats.*.id'));
 
-            $data = $this->formatBookingData($inputs->show_id, $seats);
+            $data = $this->formatBookingData($inputs['show_id'], $showSeats);
             $booking = Booking::create($data);
 
-            $this->lockRequestedSeats($booking->show_id, $seats);
+            $this->lockRequestedSeats($showSeats);
+
         } catch (\Exception $error) {
             DB::rollBack();
             throw $error;
@@ -33,24 +33,18 @@ class BookingService
         return $booking;
     }
 
-    private function lockRequestedSeats(int $showId, EloquentCollection $seats): bool
+    private function lockRequestedSeats(EloquentCollection $showSeats): void
     {
-        $seatsData = $seats->map(function ($seat) use ($showId) {
-                return [
-                    'seat_id' => $seat->id,
-                    'show_id' => $showId,
-                    'price' => $seat->price,
-                    'status' => 'locked',
-                    'locked_until' => now()->addMinutes(15),
-                ];
-            })
-            ->toArray();
-        return ShowSeat::insert($seatsData);
+        ShowSeat::whereIn('id', $showSeats->pluck('id')->toArray())
+            ->update([
+                'status' => 'locked',
+                'locked_until' => now()->addMinutes(15),
+            ]);
     }
 
     public function getShowSeatsById(int $showId, array $seatIds): EloquentCollection
     {
-        return ShowSeat::select(['id', 'price'])
+        return ShowSeat::select(['id', 'price', 'seat_id'])
             ->whereIn('seat_id', $seatIds)
             ->where('show_id', $showId)
             ->where('status', 'available')
@@ -68,9 +62,8 @@ class BookingService
     private function formatBookingData(int $showId, EloquentCollection $seats): array
     {
         $show = MovieShow::with('movie')
-            ->where('id', $showId)
-            ->get()
-            ->first();
+            ->findOrFail($showId);
+
         $totalAmount = $this->calculateTotalAmount($seats);
 
         return [
@@ -83,7 +76,7 @@ class BookingService
 
     private function calculateTotalAmount(EloquentCollection $seats): float
     {
-        $prices = $seats->pluck('seats.id')->toArray();
+        $prices = $seats->pluck('price')->toArray();
         $total = array_sum($prices);
 
         return $total;

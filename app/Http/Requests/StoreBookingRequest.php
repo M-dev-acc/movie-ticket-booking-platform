@@ -30,9 +30,9 @@ class StoreBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'show_id' => "required|int|exists:movie_shows,id",
+            'show_id' => "required|integer|exists:movie_shows,id",
             'seats' => "required|array|min:1",
-            'seats.*.id' => "required|interger|exists:seats,id",
+            'seats.*.id' => "required|integer|exists:seats,id",
         ];
     }
 
