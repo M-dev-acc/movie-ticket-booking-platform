@@ -46,13 +46,13 @@ class StoreMovieShowRequest extends FormRequest
              */
             function (Validator $validator) {
                 $screen = Screen::find($this->screen_id);
-                $theaterId = $this->route('theater');
-
-                if (!$screen || !$theaterId) {
+                $theater = $this->route('theater');
+                
+                if (!$screen || !$theater) {
                     return;
                 }
 
-                if ((int) $screen->theater_id !== (int) $theaterId) {
+                if ((int) $screen->theater_id !== (int) $theater->id) {
                     $validator->errors()
                         ->add(
                             'screen_id',

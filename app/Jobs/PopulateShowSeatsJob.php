@@ -15,6 +15,8 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
+    public int $reties = 3;
+
     /**
      * Create a new job instance.
      */
@@ -41,19 +43,30 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
             return;
         }
 
-        $groups = $seats->mapToGroups(function (array $seat, int $key) {
+        $groups = $seats->mapToGroups(function (Seat $seat, int $key) {
             return [
                 $seat['type'] => [
                     'show_id' => $this->show->id,
                     'seat_id' => $seat['id'],
                     'status' => 'available',
                     'price' => $this->show->price,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]
             ];
         });
 
         foreach ($groups as $type => $group) {
             ShowSeat::insertOrIgnore($group->toArray());
+            Log::info("The $type seats populate successfully.");
         }
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('PopulateShowSeatsJob: job failed permanently.', [
+            'language' => $this->show->id,
+            'error'    => $exception->getMessage(),
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Jobs\PopulateShowSeatsJob;
 use App\Models\MovieShow;
 
 class MovieShowObserver
@@ -11,7 +12,7 @@ class MovieShowObserver
      */
     public function created(MovieShow $movieShow): void
     {
-        //
+        PopulateShowSeatsJob::dispatch($movieShow);
     }
 
     /**
