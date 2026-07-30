@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Jobs\ShowSeat;
 
 use App\Models\MovieShow;
 use App\Models\Seat;
@@ -8,7 +8,6 @@ use App\Models\ShowSeat;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique

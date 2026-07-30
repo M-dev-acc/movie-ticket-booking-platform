@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Jobs\PopulateShowSeatsJob;
+use App\Jobs\ShowSeat\PopulateShowSeatsJob;
 use App\Models\MovieShow;
 
 class MovieShowObserver
