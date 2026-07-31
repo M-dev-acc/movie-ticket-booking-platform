@@ -56,9 +56,16 @@ class ShowSeat extends Model
     public function scopeLocked(Builder $query): Builder
     {
         return $query->where(function (Builder $query): Builder {
-            return $query->where('status', 'locked')
-                ->where('locked_until', '>=', now());
+            return $query->where('status', self::STATUS_LOCKED)
+                ->whereNotNull('locked_until');
         });
     }
 
+    public function scopeExpiredLockedSeats(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): Builder {
+            return $query->where('status', self::STATUS_LOCKED)
+                ->where('locked_until', '<', now());
+        });
+    }
 }

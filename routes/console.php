@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\FetchUpcomingMoviesJob;
+use App\Jobs\ShowSeat\UnlockShowSeatsJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -11,4 +12,7 @@ Artisan::command('inspire', function () {
 
 // Schedule::job(new FetchUpcomingMoviesJob(config('services.language_code.english')))->everyFiveMinutes();
 // Fetch upcoming 'Hindi' movies
-Schedule::job(new FetchUpcomingMoviesJob('hi'))->everyFifteenSeconds();
+// Schedule::job(new FetchUpcomingMoviesJob('hi'))->everyFifteenSeconds();
+Schedule::job(new UnlockShowSeatsJob())
+    ->everyFiveMinutes()
+    ->withoutOverlapping();

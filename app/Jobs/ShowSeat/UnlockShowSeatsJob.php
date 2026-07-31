@@ -34,11 +34,16 @@ class UnlockShowSeatsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $lockedSeat = ShowSeat::select(['id', 'show_id', 'seat_id', 'locked_until'])
-            ->locked()
-            ->get();
-
-
+        ShowSeat::expiredLockedSeats()
+            ->select('id')
+            ->chunkById(1000, function ($seats) {
+                ShowSeat::whereIn('id', $seats->pluck('id'))
+                    ->update([
+                        'status' => ShowSeat::STATUS_AVAILABLE,
+                        'locked_until' => null,
+                        'updated_at' => now(),
+                    ]);
+            });
     }
 
     public function failed(\Throwable $exception): void
