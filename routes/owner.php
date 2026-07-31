@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\Owner\{
+    MovieShowController,
     ScreenController, SeatController, TheaterController,
 };
 use Illuminate\Support\Facades\Route;
@@ -68,7 +69,7 @@ Route::group([
                     ->middleware('permission:Delete Screen');
             });
 
-        Route::controller(SeatController::class)
+        Route::controller(MovieShowController::class)
             ->prefix('theaters/{theater}/screens/{screen}/movie-shows')
             ->as('.show')
             ->scopeBindings()

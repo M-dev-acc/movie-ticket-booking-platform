@@ -8,7 +8,11 @@ use App\Http\Requests\MovieShow\{
     UpdateMovieShowRequest
 };
 use App\Http\Resources\MovieShow\MovieShowResource;
-use App\Models\MovieShow;
+use App\Models\{
+    MovieShow,
+    Screen,
+    Theater,
+};
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -19,21 +23,23 @@ class MovieShowController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Theater $theater, Screen $screen): JsonResponse
     {
-        $list =  MovieShow::latest()
+        $list =  $screen->shows()
+            ->latest()
             ->paginate(20);
 
         return $this->paginated(
-            $list,
-            "Movie Shows list"
+            paginator: $list,
+            message: "Movie Shows list",
+            resourceClass: MovieShowResource::class
         );
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreMovieShowRequest $request): JsonResponse
+    public function store(Theater $theater, Screen $screen, StoreMovieShowRequest $request): JsonResponse
     {
         $movieShow = MovieShow::create($request->validated());
         return $this->success(
@@ -45,7 +51,7 @@ class MovieShowController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(MovieShow $movieShow): JsonResponse
+    public function show(Theater $theater, Screen $screen, MovieShow $movieShow): JsonResponse
     {
         return $this->success(
             data: new MovieShowResource($movieShow),
@@ -56,7 +62,7 @@ class MovieShowController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateMovieShowRequest $request, MovieShow $movieShow): JsonResponse
+    public function update(Theater $theater, Screen $screen, UpdateMovieShowRequest $request, MovieShow $movieShow): JsonResponse
     {
         $movieShow->update($request->validated());
         return $this->success(
@@ -68,7 +74,7 @@ class MovieShowController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(MovieShow $movieShow): JsonResponse
+    public function destroy(Theater $theater, Screen $screen, MovieShow $movieShow): JsonResponse
     {
         $movieShow->delete();
 
