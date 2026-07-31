@@ -34,11 +34,26 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
      */
     public function handle(): void
     {
-        $seats = Seat::select(['id', 'type'])
+        $rowGroups = Seat::select(['id', 'type'])
             ->where('screen_id', $this->show->screen_id)
             ->where('is_active', true)
-            ->get();
-        if ($seats->isEmpty()) {
+            ->get(['id'])
+            ->mapToGroups(function (Seat $seat) {
+                $currentTime = now();
+                return [
+                    $seat->type => [
+                        'show_id' => $this->show->id,
+                        'seat_id' => $seat->id,
+                        'status' => ShowSeat::STATUS_AVAILABLE,
+                        'price' => $this->show->price,
+                        'created_at' => $currentTime,
+                        'updated_at' => $currentTime,
+                    ]
+                ];
+            })
+            ->all();
+
+        if (empty($rowGroups)) {
             Log::warning('PopulateShowSeatsJob: screen has no active seats.', [
                 'show_id' => $this->show->id,
                 'screen_id' => $this->show->screen_id,
@@ -46,20 +61,7 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
             return;
         }
 
-        $groups = $seats->mapToGroups(function (Seat $seat) {
-            return [
-                $seat['type'] => [
-                    'show_id' => $this->show->id,
-                    'seat_id' => $seat['id'],
-                    'status' => 'available',
-                    'price' => $this->show->price,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            ];
-        });
-
-        foreach ($groups as $type => $group) {
+        foreach ($rowGroups as $type => $group) {
             ShowSeat::insertOrIgnore($group->toArray());
             Log::info("The $type seats populate successfully.");
         }
@@ -68,7 +70,7 @@ class PopulateShowSeatsJob implements ShouldQueue, ShouldBeUnique
     public function failed(\Throwable $exception): void
     {
         Log::error('PopulateShowSeatsJob: job failed permanently.', [
-            'language' => $this->show->id,
+            'show_id' => $this->show->id,
             'error'    => $exception->getMessage(),
         ]);
     }

@@ -36,7 +36,7 @@ return new class extends Migration
                 ['show_id', 'seat_id'],
                 'show_seats_availabilty_unique'
             );
-            $table->index('status', 'show_seats_status_index');
+            $table->index(['status', 'locked_until'], 'show_seats_locked_until_status_index');
         });
     }
 

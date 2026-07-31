@@ -12,7 +12,7 @@ Artisan::command('inspire', function () {
 
 // Schedule::job(new FetchUpcomingMoviesJob(config('services.language_code.english')))->everyFiveMinutes();
 // Fetch upcoming 'Hindi' movies
-// Schedule::job(new FetchUpcomingMoviesJob('hi'))->everyFifteenSeconds();
+Schedule::job(new FetchUpcomingMoviesJob('hi'))->everyFifteenMinutes();
 Schedule::job(new UnlockShowSeatsJob())
     ->everyFiveMinutes()
     ->withoutOverlapping();
