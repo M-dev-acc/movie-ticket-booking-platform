@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\Screen;
+use App\Models\MovieShow;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class ScreenPolicy extends OwnerPolicy
+class MovieShowPolicy extends OwnerPolicy
 {
     /**
      * Admin bypasses all methods below
@@ -31,9 +31,9 @@ class ScreenPolicy extends OwnerPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Screen $screen): bool
+    public function view(User $user, MovieShow $movieShow): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return false;
     }
 
     /**
@@ -47,7 +47,7 @@ class ScreenPolicy extends OwnerPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Screen $screen): bool
+    public function update(User $user, MovieShow $movieShow): bool
     {
         return $this->ownsCurrentTheater($user);
     }
@@ -55,7 +55,7 @@ class ScreenPolicy extends OwnerPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Screen $screen): bool
+    public function delete(User $user, MovieShow $movieShow): bool
     {
         return $this->ownsCurrentTheater($user);
     }
@@ -63,17 +63,16 @@ class ScreenPolicy extends OwnerPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Screen $screen): bool
+    public function restore(User $user, MovieShow $movieShow): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return false;
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Screen $screen): bool
+    public function forceDelete(User $user, MovieShow $movieShow): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return false;
     }
-
 }

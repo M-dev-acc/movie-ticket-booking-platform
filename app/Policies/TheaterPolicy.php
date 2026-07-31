@@ -6,7 +6,7 @@ use App\Models\Theater;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class TheaterPolicy
+class TheaterPolicy extends OwnerPolicy
 {
     /**
      * Admin bypasses all methods below
@@ -33,7 +33,7 @@ class TheaterPolicy
      */
     public function view(User $user, Theater $theater): bool
     {
-        return $this->isOwnerOf($theater, $user);
+        return $this->ownsCurrentTheater($user);
     }
 
     /**
@@ -49,7 +49,7 @@ class TheaterPolicy
      */
     public function update(User $user, Theater $theater): bool
     {
-        return $this->isOwnerOf($theater, $user);
+        return $this->ownsCurrentTheater($user);
     }
 
     /**
@@ -57,7 +57,7 @@ class TheaterPolicy
      */
     public function delete(User $user, Theater $theater): bool
     {
-        return false;
+        return $this->ownsCurrentTheater($user);
     }
 
     /**
@@ -75,11 +75,5 @@ class TheaterPolicy
     {
         return false;
     }
-
-    private function isOwnerOf(Theater $theater, User $user): bool
-    {
-        return $theater->owners()
-            ->where('user_id', $user->id)
-            ->exists();
-    }
+    
 }

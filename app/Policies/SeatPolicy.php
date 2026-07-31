@@ -6,7 +6,7 @@ use App\Models\Seat;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class SeatPolicy
+class SeatPolicy extends OwnerPolicy
 {
     /**
      * Admin bypasses all methods below
@@ -33,7 +33,7 @@ class SeatPolicy
      */
     public function view(User $user, Seat $seat): bool
     {
-        return $this->isOwnerOf($seat, $user);
+        return $this->ownsCurrentTheater($user);
     }
 
     /**
@@ -49,7 +49,7 @@ class SeatPolicy
      */
     public function update(User $user, Seat $seat): bool
     {
-        return $this->isOwnerOf($seat, $user);
+        return $this->ownsCurrentTheater($user);
     }
 
     /**
@@ -57,7 +57,7 @@ class SeatPolicy
      */
     public function delete(User $user, Seat $seat): bool
     {
-        return $this->isOwnerOf($seat, $user);
+        return $this->ownsCurrentTheater($user);
     }
 
     /**
@@ -76,11 +76,4 @@ class SeatPolicy
         return false;
     }
 
-    private function isOwnerOf(Seat $seat, User $user) : bool {
-        return $seat->screen
-            ?->theater
-            ?->owners()
-            ?->wherePivot('user_id', $user->id)
-            ?->exists();
-    }
 }

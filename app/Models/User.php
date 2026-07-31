@@ -49,7 +49,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function theater(): BelongsToMany
+    public function ownedTheaters(): BelongsToMany
     {
         return $this->belongsToMany(Theater::class, 'theater_owners')
             ->withPivot('assigned_by')

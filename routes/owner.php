@@ -67,4 +67,24 @@ Route::group([
                     ->name('.destroy')
                     ->middleware('permission:Delete Screen');
             });
+
+        Route::controller(SeatController::class)
+            ->prefix('theaters/{theater}/screens/{screen}/movie-shows')
+            ->as('.show')
+            ->scopeBindings()
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::post('/create', 'store')
+                    ->name('.create')
+                    ->middleware('permission:Create Movie Show');
+                Route::get('/{movie_show}', 'show')
+                    ->name('.show')
+                    ->middleware('permission:Read Movie Show');
+                Route::patch('/{movie_show}/update', 'update')
+                    ->name('.update')
+                    ->middleware('permission:Edit Movie Show');
+                Route::delete('/{movie_show}/delete', 'destroy')
+                    ->name('.destroy')
+                    ->middleware('permission:Delete Movie Show');
+            });
     });
