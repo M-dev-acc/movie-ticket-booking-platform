@@ -6,6 +6,7 @@ use App\Http\Controllers\{
     MovieController,
     MovieShowController,
     ScreenController,
+    TheaterController,
 };
 use Illuminate\Support\Facades\Route;
 
@@ -38,30 +39,21 @@ Route::group([
 
         Route::controller(TheaterController::class)
             ->prefix('theater')
+            ->scopeBindings()
             ->group(
                 function () {
                     Route::get('/', 'index');
-                    Route::get('/{id}', 'show')
-                        ->where('id', '[0-9]+')
+                    Route::get('/{theater}', 'show')
                         ->middleware('permission:Read Theater');
                 }
             );
 
-        Route::controller(ScreenController::class)
-            ->prefix('screen')
-            ->group(function () {
-                Route::get('/', 'index');
-                Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+')
-                    ->middleware('permission:Read Screen');
-            });
-
         Route::controller(MovieShowController::class)
             ->prefix('movie-show')
+            ->scopeBindings()
             ->group(function () {
                 Route::get('/', 'index');
-                Route::get('/{id}', 'show')
-                    ->where('id', '[0-9]+')
+                Route::get('/{movie_show}', 'show')
                     ->middleware('permission:Read Movie Show');
             });
 

@@ -24,6 +24,7 @@ class TheaterController extends Controller
             resourceClass: TheaterResource::class
         );
     }
+    
     /**
      * Display the specified resource.
      */

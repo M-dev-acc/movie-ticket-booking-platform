@@ -16,6 +16,21 @@ class MovieShowController extends Controller
     use ApiResponse;
 
     /**
+     * Display a listing of the resource.
+     */
+    public function index(): JsonResponse
+    {
+        $list =  MovieShow::latest()
+            ->paginate(20);
+
+        return $this->paginated(
+            paginator: $list,
+            message: "Movie Shows list",
+            resourceClass: MovieShowResource::class
+        );
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(MovieShow $movieShow): JsonResponse
