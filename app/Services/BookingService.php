@@ -45,9 +45,10 @@ class BookingService
     public function getShowSeatsById(int $showId, array $seatIds): EloquentCollection
     {
         return ShowSeat::select(['id', 'price', 'seat_id'])
+            ->locked()
             ->whereIn('seat_id', $seatIds)
             ->where('show_id', $showId)
-            ->where('status', 'available')
+            ->lockForUpdate()
             ->get();
     }
 

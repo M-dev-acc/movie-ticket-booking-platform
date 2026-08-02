@@ -26,7 +26,7 @@ class SeatController extends Controller
      */
     public function index(Theater $theater, Screen $screen): JsonResponse
     {
-        $this->authorize('viewAny', $screen);
+        $this->authorize('viewAny', Seat::class);
 
         $seatsCollection = $screen->seats()
             ->orderBy('row')
@@ -71,6 +71,7 @@ class SeatController extends Controller
      */
     public function show(Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
+        $seat = Seat::with('screen.theater')->findOrFail($seat->id);
         $this->authorize('view', $seat);
 
         return $this->success(new SeatResource($seat), message: "Seat details");
@@ -81,6 +82,7 @@ class SeatController extends Controller
      */
     public function update(UpdateSeatRequest $request, Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
+        $seat = Seat::with('screen.theater')->findOrFail($seat->id);
         $this->authorize('update', $seat);
 
         $seat->update($request->validated());
@@ -97,6 +99,7 @@ class SeatController extends Controller
      */
     public function destroy(Theater $theater, Screen $screen, Seat $seat): JsonResponse
     {
+        $seat = Seat::with('screen.theater')->findOrFail($seat->id);
         $this->authorize('delete', $seat);
 
         $seat->delete();

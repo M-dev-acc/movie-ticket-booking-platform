@@ -27,6 +27,7 @@ class BookingController extends Controller
     public function index(): JsonResponse
     {
         $bookings = Booking::latest()
+            ->where('user_id', auth()->id())
             ->paginate(20);
         return $this->success($bookings, message: 'Bookings list');
     }
@@ -36,6 +37,8 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request): JsonResponse
     {
+        $this->authorize('create', Booking::class);
+
         $bookingDetails = $this->service->createBooking($request->validated());
         return $this->success(
             data: new BookingResource($bookingDetails),
@@ -47,19 +50,11 @@ class BookingController extends Controller
      */
     public function show(Booking $booking): JsonResponse
     {
+        $this->authorize('view', $booking);
+
         return $this->success(
             new BookingResource($booking),
             message: 'Booking details');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBookingRequest $request, Booking $booking)
-    {
-        $booking->update($request->validated());
-
-        return $this->success($booking->fresh(), message: 'Booking details updated successfully!');
     }
 
     /**
@@ -67,6 +62,8 @@ class BookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
+        $this->authorize('delete', $booking);
+
         $booking->delete();
 
         return $this->noContent('Booking cancelled successfully');

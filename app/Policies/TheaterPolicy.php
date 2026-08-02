@@ -33,7 +33,7 @@ class TheaterPolicy extends OwnerPolicy
      */
     public function view(User $user, Theater $theater): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $theater);
     }
 
     /**
@@ -49,7 +49,7 @@ class TheaterPolicy extends OwnerPolicy
      */
     public function update(User $user, Theater $theater): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $theater);
     }
 
     /**
@@ -57,7 +57,7 @@ class TheaterPolicy extends OwnerPolicy
      */
     public function delete(User $user, Theater $theater): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return false;
     }
 
     /**
@@ -75,5 +75,5 @@ class TheaterPolicy extends OwnerPolicy
     {
         return false;
     }
-    
+
 }

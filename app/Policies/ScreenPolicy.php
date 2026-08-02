@@ -33,7 +33,7 @@ class ScreenPolicy extends OwnerPolicy
      */
     public function view(User $user, Screen $screen): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $screen->theater);
     }
 
     /**
@@ -49,7 +49,7 @@ class ScreenPolicy extends OwnerPolicy
      */
     public function update(User $user, Screen $screen): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $screen->theater);
     }
 
     /**
@@ -57,7 +57,7 @@ class ScreenPolicy extends OwnerPolicy
      */
     public function delete(User $user, Screen $screen): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $screen->theater);
     }
 
     /**
@@ -65,7 +65,7 @@ class ScreenPolicy extends OwnerPolicy
      */
     public function restore(User $user, Screen $screen): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return false;
     }
 
     /**
@@ -73,7 +73,7 @@ class ScreenPolicy extends OwnerPolicy
      */
     public function forceDelete(User $user, Screen $screen): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return false;
     }
 
 }

@@ -2,16 +2,15 @@
 
 namespace App\Policies;
 
+use App\Models\Theater;
 use App\Models\User;
 
 abstract class OwnerPolicy
 {
-    protected function ownsCurrentTheater(User $user)
+    protected function ownsCurrentTheater(User $user, Theater $theater): bool
     {
-        $theater = request()->route('theater');
-
-        return $user->ownedTheaters()
-            ->whereKey($theater)
+        return $theater->owners()
+            ->whereKey($user->id)
             ->exists();
     }
 }

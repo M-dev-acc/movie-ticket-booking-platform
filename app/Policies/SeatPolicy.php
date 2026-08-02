@@ -33,7 +33,7 @@ class SeatPolicy extends OwnerPolicy
      */
     public function view(User $user, Seat $seat): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $seat->screen->theater);
     }
 
     /**
@@ -49,7 +49,7 @@ class SeatPolicy extends OwnerPolicy
      */
     public function update(User $user, Seat $seat): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $seat->screen->theater);
     }
 
     /**
@@ -57,7 +57,7 @@ class SeatPolicy extends OwnerPolicy
      */
     public function delete(User $user, Seat $seat): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $seat->screen->theater);
     }
 
     /**

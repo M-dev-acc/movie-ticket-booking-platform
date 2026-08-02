@@ -49,7 +49,7 @@ class MovieShowPolicy extends OwnerPolicy
      */
     public function update(User $user, MovieShow $movieShow): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $movieShow->screen->theater);
     }
 
     /**
@@ -57,7 +57,7 @@ class MovieShowPolicy extends OwnerPolicy
      */
     public function delete(User $user, MovieShow $movieShow): bool
     {
-        return $this->ownsCurrentTheater($user);
+        return $this->ownsCurrentTheater($user, $movieShow->screen->theater);
     }
 
     /**

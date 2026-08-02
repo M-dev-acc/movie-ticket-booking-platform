@@ -20,6 +20,14 @@ class Booking extends Model
         'movie_id',
         'booked_at',
         'status',
+        'total_amount',
+        'booked_at',
+        'confirmed_at',
+    ];
+
+    protected $casts = [
+        'booked_at' => 'datetime',
+        'confirmed_at' => 'datetime',
     ];
 
     protected static function booted(): void

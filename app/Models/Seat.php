@@ -37,7 +37,8 @@ class Seat extends Model
     public function screen() : BelongsTo {
         return $this->belongsTo(Screen::class);
     }
-    public function theater() : HasOneThrough {
-        return $this->hasOneThrough(Theater::class, Screen::class, 'theater_id', 'id', 'id', 'id');
-    }
+
+    // public function getTheaterAttribute() : ?Theater {
+    //     return $this->screen?->theater;
+    // }
 }

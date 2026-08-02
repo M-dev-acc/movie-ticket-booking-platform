@@ -25,6 +25,8 @@ class MovieShowController extends Controller
      */
     public function index(Theater $theater, Screen $screen): JsonResponse
     {
+        $this->authorize('viewAny',  MovieShow::class);
+
         $list =  $screen->shows()
             ->latest()
             ->paginate(20);
@@ -41,6 +43,8 @@ class MovieShowController extends Controller
      */
     public function store(Theater $theater, Screen $screen, StoreMovieShowRequest $request): JsonResponse
     {
+        $this->authorize('create', MovieShow::class);
+
         $movieShow = MovieShow::create($request->validated());
         return $this->success(
             data: new MovieShowResource($movieShow),
@@ -53,6 +57,9 @@ class MovieShowController extends Controller
      */
     public function show(Theater $theater, Screen $screen, MovieShow $movieShow): JsonResponse
     {
+        $movieShow = MovieShow::with('screen.theater')->findOrFail($movieShow->id);
+        $this->authorize('view', $movieShow);
+
         return $this->success(
             data: new MovieShowResource($movieShow),
             message: "Movie show details",
@@ -64,6 +71,9 @@ class MovieShowController extends Controller
      */
     public function update(Theater $theater, Screen $screen, UpdateMovieShowRequest $request, MovieShow $movieShow): JsonResponse
     {
+        $movieShow = MovieShow::with('screen.theater')->findOrFail($movieShow->id);
+        $this->authorize('update', $movieShow);
+
         $movieShow->update($request->validated());
         return $this->success(
             data: new MovieShowResource($movieShow->fresh()),
@@ -76,6 +86,9 @@ class MovieShowController extends Controller
      */
     public function destroy(Theater $theater, Screen $screen, MovieShow $movieShow): JsonResponse
     {
+        $movieShow = MovieShow::with('screen.theater')->findOrFail($movieShow->id);
+        $this->authorize('delete', $movieShow);
+
         $movieShow->delete();
 
         return $this->noContent("Movie show deleted successfully!");
