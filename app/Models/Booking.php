@@ -32,7 +32,7 @@ class Booking extends Model
 
     protected static function booted(): void
     {
-        static::saving(function (Booking $booking) {
+        static::creating(function (Booking $booking) {
             $booking->code = Str::uuid();
             $booking->booked_at = now();
         });

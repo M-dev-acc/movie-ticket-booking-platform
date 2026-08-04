@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\Booking;
-use App\Models\BookingSeat;
-use App\Models\MovieShow;
-use App\Models\ShowSeat;
+use App\Exceptions\Booking\SeatUnavailableException;
+use App\Models\{
+    Booking,
+    BookingSeat,
+    MovieShow,
+    ShowSeat,
+};
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BookingService
@@ -59,12 +61,18 @@ class BookingService
 
     public function getShowSeatsById(int $showId, array $seatIds): EloquentCollection
     {
-        return ShowSeat::select(['id', 'price', 'seat_id'])
+        $showSeats = ShowSeat::select(['id', 'price', 'seat_id'])
             ->available()
             ->whereIn('seat_id', $seatIds)
             ->where('show_id', $showId)
             ->lockForUpdate()
             ->get();
+
+        if ($showSeats->count() !== count($seatIds)) {
+            throw new SeatUnavailableException("The selected seat(s) are not found.");
+        }
+
+        return $showSeats;
     }
 
     public function areSeatsAvailable(int $showId, array $seatIds): bool
