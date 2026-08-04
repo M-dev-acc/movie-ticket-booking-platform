@@ -14,6 +14,22 @@ class Booking extends Model
     use HasFactory;
     use SoftDeletes;
 
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_RESERVED = 'reserved';
+    public const STATUS_PAYMENT_PENDING = 'payment_pending';
+    public const STATUS_CONFIRMED = 'confirmed';
+    public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_FAILED = 'failed';
+
+    public const STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_RESERVED,
+        self::STATUS_PAYMENT_PENDING,
+        self::STATUS_CONFIRMED,
+        self::STATUS_CANCELLED,
+        self::STATUS_FAILED,
+    ];
+
     protected $fillable = [
         'user_id',
         'show_id',

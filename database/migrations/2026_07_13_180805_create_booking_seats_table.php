@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('seat_id');
             $table->decimal('price_paid', 8, 2);
             $table->enum('status', [
+                'pending',
                 'confirmed',
                 'cancelled',
             ]);

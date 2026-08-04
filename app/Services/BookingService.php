@@ -47,13 +47,14 @@ class BookingService
 
     private function bookRequestedSeats(EloquentCollection $showSeats, Booking $booking): void
     {
+        $currentTimestamp = now();
         $bookingSeatsData = $showSeats->map(fn($showSeat) => [
             'booking_id' => $booking->id,
             'seat_id' => $showSeat->seat_id,
             'price_paid' => $showSeat->price,
-            'status' => 'confirmed',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'status' => BookingSeat::STATUS_PENDING,
+            'created_at' => $currentTimestamp,
+            'updated_at' => $currentTimestamp,
         ])->toArray();
 
         BookingSeat::insert($bookingSeatsData);
