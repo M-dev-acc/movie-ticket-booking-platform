@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\BookingSeat;
 use App\Models\MovieShow;
 use App\Models\ShowSeat;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -23,7 +24,7 @@ class BookingService
             $booking = Booking::create($data);
 
             $this->lockRequestedSeats($showSeats);
-
+            $this->bookRequestedSeats($showSeats, $booking);
         } catch (\Exception $error) {
             DB::rollBack();
             throw $error;
@@ -42,10 +43,24 @@ class BookingService
             ]);
     }
 
+    private function bookRequestedSeats(EloquentCollection $showSeats, Booking $booking): void
+    {
+        $bookingSeatsData = $showSeats->map(fn($showSeat) => [
+            'booking_id' => $booking->id,
+            'seat_id' => $showSeat->seat_id,
+            'price_paid' => $showSeat->price,
+            'status' => 'confirmed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ])->toArray();
+
+        BookingSeat::insert($bookingSeatsData);
+    }
+
     public function getShowSeatsById(int $showId, array $seatIds): EloquentCollection
     {
         return ShowSeat::select(['id', 'price', 'seat_id'])
-            ->locked()
+            ->available()
             ->whereIn('seat_id', $seatIds)
             ->where('show_id', $showId)
             ->lockForUpdate()

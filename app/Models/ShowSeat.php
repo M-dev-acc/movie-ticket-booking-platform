@@ -53,6 +53,14 @@ class ShowSeat extends Model
     |--------------------------------------------------------------------------
     */
 
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): Builder {
+            return $query->where('status', self::STATUS_AVAILABLE)
+                ->whereNull('locked_until');
+        });
+    }
+    
     public function scopeLocked(Builder $query): Builder
     {
         return $query->where(function (Builder $query): Builder {

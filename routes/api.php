@@ -49,7 +49,7 @@ Route::group([
             );
 
         Route::controller(MovieShowController::class)
-            ->prefix('movie-show')
+            ->prefix('shows')
             ->scopeBindings()
             ->group(function () {
                 Route::get('/', 'index');
