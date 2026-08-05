@@ -10,6 +10,8 @@ use App\Services\ExternalApi\Contracts\MovieApiInterface;
 use App\Services\ExternalApi\Http\ApiAuthenticator;
 use App\Services\ExternalApi\Http\ApiClient;
 use App\Services\ExternalApi\TmdbApiService;
+use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Services\Payment\RazorpayService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(MovieRepositoryInterface::class, MovieRepository::class);
         $this->app->bind(MovieApiInterface::class, TmdbApiService::class);
+        $this->app->bind(PaymentGatewayInterface::class, RazorpayService::class);
     }
 
     public function boot(): void
