@@ -54,15 +54,23 @@ class Booking extends Model
         });
     }
 
-    public function user() : BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function show() : BelongsTo {
+    public function show(): BelongsTo
+    {
         return $this->belongsTo(MovieShow::class, 'show_id');
     }
 
-    public function movie() : BelongsTo {
+    public function movie(): BelongsTo
+    {
         return $this->belongsTo(Movie::class, 'movie_id');
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(Payment::class);
     }
 }
