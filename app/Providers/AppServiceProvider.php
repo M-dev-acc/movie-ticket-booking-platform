@@ -13,6 +13,7 @@ use App\Services\ExternalApi\TmdbApiService;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use App\Services\Payment\RazorpayService;
 use Illuminate\Support\ServiceProvider;
+use Razorpay\Api\Api as Razorpay;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +32,13 @@ class AppServiceProvider extends ServiceProvider
             return new ApiClient(
                 auth: $app->make(ApiAuthenticator::class),
                 baseUrl: config('services.tmdb.base_url'),
+            );
+        });
+
+        $this->app->singleton(Razorpay::class, function () {
+            return new Razorpay(
+                config('razorpay.key_id'),
+                config('razorpay.key_secret_id')
             );
         });
 
