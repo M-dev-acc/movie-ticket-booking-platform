@@ -6,11 +6,12 @@ use App\Models\Booking;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Razorpay\Api\Api as Razorpay;
 use Razorpay\Api\Errors\SignatureVerificationError;
+use Razorpay\Api\Order as RazorpayOrder;
 
 class RazorpayService implements PaymentGatewayInterface
 {
     public function __construct(
-        public Razorpay $gateway
+        private Razorpay $gateway
     ) {
     }
 
@@ -21,9 +22,9 @@ class RazorpayService implements PaymentGatewayInterface
      * Returns the full Razorpay order object as an array.
      * The frontend needs: id (gateway_order_id), amount, currency.
      */
-    public function createOrder(Booking $booking): array
+    public function createOrder(Booking $booking): RazorpayOrder
     {
-        return (array) $this->gateway->order->create([
+        return (object) $this->gateway->order->create([
             'amount' => (int) ($booking->total_amount * 100), // amount in paise (100 paise = 1 rupee)
             'currency' => 'INR',
             'receipt' => $booking->code,
