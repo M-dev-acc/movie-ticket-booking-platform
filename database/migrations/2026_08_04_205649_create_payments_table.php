@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('booking_id');
             $table->string('gateway')->default('razorpay');
             $table->string('gateway_order_id')->unique();
-            $table->string('gateway_payment_id')->unique();
+            $table->string('gateway_payment_id')->nullable()->unique();
             $table->decimal('amount', 8, 2);
             $table->string('currency')->default('INR');
             $table->enum('status', [

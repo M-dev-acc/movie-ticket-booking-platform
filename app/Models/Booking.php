@@ -69,7 +69,7 @@ class Booking extends Model
         return $this->belongsTo(Movie::class, 'movie_id');
     }
 
-    public function bookings()
+    public function payments()
     {
         return $this->hasMany(Payment::class);
     }
