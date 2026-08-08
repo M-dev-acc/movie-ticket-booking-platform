@@ -5,8 +5,10 @@ use App\Http\Controllers\{
     BookingController,
     MovieController,
     MovieShowController,
+    PaymentController,
     ScreenController,
     TheaterController,
+    WebhokController,
 };
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +20,15 @@ Route::controller(MovieController::class)
         Route::get('/search', [MovieController::class, 'search']);
         Route::get('/{id}', [MovieController::class, 'show'])
         ->whereNumber('id');
+    });
+
+Route::post('webhooks/razorpay', WebhokController::class);
+
+Route::controller(PaymentController::class)
+    ->prefix('payments')
+    ->group(function () {
+        Route::post('/initiate', 'initiate');
+        Route::post('/verify', 'verify');
     });
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
