@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
-class WebhokController extends Controller
+class WebhookController extends Controller
 {
     public function __construct(
         private PaymentGatewayInterface $gateway,
@@ -33,7 +33,7 @@ class WebhokController extends Controller
 
         try {
             match ($event) {
-                'payment.capture' => $this->service->confirmFromWebhook($payload),
+                'payment.captured' => $this->service->confirmFromWebhook($payload),
                 'payment.failed' => $this->service->handleFaiure($payload),
                 default => null
             };

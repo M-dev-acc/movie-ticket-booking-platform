@@ -19,7 +19,7 @@ class PaymentController extends Controller
     ) {
     }
 
-    public function intiate(Request $request): JsonResponse
+    public function initiate(Request $request): JsonResponse
     {
         $request->validate([
             'booking_code' => 'required|string|exists:bookings,code',
@@ -30,8 +30,8 @@ class PaymentController extends Controller
             ->firstOrFail();
         if($booking->status !== Booking::STATUS_RESERVED) {
             return $this->error(
-                'This booking is not in payable state. Status: ' . $booking->status,
-                422
+                message: 'This booking is not in payable state. Status: ' . $booking->status,
+                statusCode: 422
             );
         }
 

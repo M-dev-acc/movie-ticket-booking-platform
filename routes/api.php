@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     PaymentController,
     ScreenController,
     TheaterController,
-    WebhokController,
+    WebhookController,
 };
 use Illuminate\Support\Facades\Route;
 
@@ -22,15 +22,6 @@ Route::controller(MovieController::class)
         ->whereNumber('id');
     });
 
-Route::post('webhooks/razorpay', WebhokController::class);
-
-Route::controller(PaymentController::class)
-    ->prefix('payments')
-    ->group(function () {
-        Route::post('/initiate', 'initiate');
-        Route::post('/verify', 'verify');
-    });
-
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
 Route::group([
@@ -42,6 +33,15 @@ Route::group([
 
     require __DIR__ . '/admin.php';
     require __DIR__ . '/owner.php';
+
+    Route::post('/webhooks/razorpay', WebhookController::class)->withoutMiddleware("auth:sanctum");
+
+    Route::controller(PaymentController::class)
+        ->prefix('payments')
+        ->group(function () {
+            Route::post('/initiate', 'initiate');
+            Route::post('/verify', 'verify');
+        });
 
     Route::group([
         'middleware' => "role:user",

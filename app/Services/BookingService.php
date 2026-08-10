@@ -58,6 +58,10 @@ class BookingService
         ])->toArray();
 
         BookingSeat::insert($bookingSeatsData);
+
+        $booking->update([
+            'status' => Booking::STATUS_RESERVED
+        ]);
     }
 
     public function getShowSeatsById(int $showId, array $seatIds): EloquentCollection
