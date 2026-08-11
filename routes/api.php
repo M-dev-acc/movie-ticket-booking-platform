@@ -12,6 +12,8 @@ use App\Http\Controllers\{
 };
 use Illuminate\Support\Facades\Route;
 
+Route::post('/webhooks/razorpay', WebhookController::class);
+
 Route::controller(MovieController::class)
     ->prefix('movies')
     ->group(function () {
@@ -34,7 +36,6 @@ Route::group([
     require __DIR__ . '/admin.php';
     require __DIR__ . '/owner.php';
 
-    Route::post('/webhooks/razorpay', WebhookController::class)->withoutMiddleware("auth:sanctum");
 
     Route::controller(PaymentController::class)
         ->prefix('payments')

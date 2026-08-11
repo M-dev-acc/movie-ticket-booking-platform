@@ -105,7 +105,7 @@ class PaymentService
             ]);
 
             $booking->update([
-                'status' => BookingSeat::STATUS_CONFIRMED,
+                'status' => Booking::STATUS_CONFIRMED,
                 'confirmed_at' => now(),
             ]);
         });
@@ -115,7 +115,7 @@ class PaymentService
      * Handle a failed payment webhook.
      * Releases seats back to available.
      */
-    public function handleFaiure(array $payload): void
+    public function handleFailure(array $payload): void
     {
         $paymentEntity = $payload['payload']['payment']['entity'] ?? null;
         $gatewayOrderId = $paymentEntity['order_id'] ?? null;

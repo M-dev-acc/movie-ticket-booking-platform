@@ -34,7 +34,7 @@ class WebhookController extends Controller
         try {
             match ($event) {
                 'payment.captured' => $this->service->confirmFromWebhook($payload),
-                'payment.failed' => $this->service->handleFaiure($payload),
+                'payment.failed' => $this->service->handleFailure($payload),
                 default => null
             };
         } catch (\Throwable $th) {

@@ -64,7 +64,7 @@ class RazorpayService implements PaymentGatewayInterface
                     'razorpay_signature' => $signature
                 ]);
             return [
-                'status' => false,
+                'status' => true,
             ];
         } catch (SignatureVerificationError $th) {
             return [
