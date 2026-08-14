@@ -1,23 +1,21 @@
-# Movie Ticket Booking Platform
+# Movie Booking API
 
-> **Status: In Active Development** — Backend API is partially implemented. Frontend development has not started.
+A production-architecture REST API for a franchise-based movie ticket booking platform. Built with Laravel 11, the system handles multi-role access control, real-time seat availability, concurrent booking prevention, TMDB movie sync, and Razorpay payment processing.
 
-A franchise-based movie ticket booking backend built with **Laravel 11** and **PostgreSQL**. The system is designed around three user roles (`admin`, `owner`, `user`) with granular permission control, a TMDB-integrated movie data layer, and a scheduled background job to keep movie listings in sync.
+**Repository:** Backend API only — frontend is maintained in a separate repository.
 
 ---
 
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
-- [Architecture & Code Organisation](#architecture--code-organisation)
+- [Architecture](#architecture)
 - [Database Schema](#database-schema)
-- [API Design](#api-design)
-- [Authentication & Authorization](#authentication--authorization)
-- [TMDB Integration & Movie Sync](#tmdb-integration--movie-sync)
-- [Testing](#testing)
-- [Installation & Setup](#installation--setup)
-- [Environment Configuration](#environment-configuration)
-- [Project Status](#project-status)
+- [API Reference](#api-reference)
+- [Key Engineering Decisions](#key-engineering-decisions)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Running Tests](#running-tests)
 
 ---
 
@@ -26,245 +24,297 @@ A franchise-based movie ticket booking backend built with **Laravel 11** and **P
 | Layer | Technology |
 |---|---|
 | Framework | Laravel 11, PHP ^8.2 |
-| Database | PostgreSQL |
-| Authentication | Laravel Sanctum `^4.0` |
-| Authorization | Spatie Laravel Permission `^6.20` |
+| Database | MySQL 8 |
+| Authentication | Laravel Sanctum |
+| Authorization | Spatie Laravel Permission |
+| Payment | Razorpay |
 | External API | TMDB (The Movie Database) |
-| Testing | PHPUnit `^11`, Mockery `^1.6` |
-| Frontend | Vue 3, Vite, Tailwind CSS — **scaffolded only, not implemented** |
+| Queue | Database-backed (Laravel Queue) |
+| Testing | PHPUnit 11, Mockery |
+| Containerisation | Docker, Docker Compose |
 
 ---
 
-## Architecture & Code Organisation
-
-The application follows a layered architecture within Laravel's MVC structure. Key patterns in use:
+## Architecture
 
 ```
 app/
-├── DTOs/                        # Data Transfer Objects (MovieDTO)
-├── Exceptions/                  # Typed API exceptions (Auth, Connection, RateLimit)
+├── DTOs/
+│   └── MovieDTO.php             # Readonly class mapping TMDB response to internal structure
+├── Exceptions/                  # Typed domain exceptions
+│   ├── ApiAuthException.php
+│   ├── ApiConnectionException.php
+│   ├── ApiRateLimitException.php
+│   └── Booking/SeatUnavailableException.php
 ├── Http/
-│   ├── Controllers/             # Thin controllers — delegate to service/repository
-│   ├── Requests/                # Form Request classes for input validation
-│   └── Resources/               # API Resources for response shaping
-├── Jobs/                        # FetchUpcomingMoviesJob (queued, scheduled)
-├── Models/                      # Eloquent models
-├── Providers/                   # AppServiceProvider — IoC bindings
+│   ├── Controllers/             # Thin controllers — delegate to services
+│   ├── Requests/                # Input validation via Form Request classes
+│   └── Resources/               # API Resources for consistent response shaping
+├── Jobs/
+│   ├── FetchUpcomingMoviesJob.php     # Paginated TMDB sync, multi-language
+│   └── ShowSeat/
+│       ├── PopulateShowSeatsJob.php   # Bulk-inserts show_seat rows after show creation
+│       └── UnlockShowSeatsJob.php     # Releases expired seat locks every 5 minutes
+├── Models/                      # Eloquent models with typed status constants
+├── Observers/
+│   └── MovieShowObserver.php    # Dispatches PopulateShowSeatsJob on show creation
+├── Policies/
+│   ├── OwnerPolicy.php          # Base class — shared ownsTheater() ownership check
+│   ├── TheaterPolicy.php
+│   ├── ScreenPolicy.php
+│   ├── SeatPolicy.php
+│   ├── MovieShowPolicy.php
+│   └── BookingPolicy.php
 ├── Repositories/
-│   ├── Contracts/               # Interfaces for Movie, Screen, MovieShow repos
-│   └── Interfaces/              # Interface for Theater repo
+│   ├── Contracts/MovieRepositoryInterface.php
+│   └── MovieRepository.php      # Stale check, upsert, search queries
 ├── Services/
-│   ├── MovieService.php         # Business logic: DB-first fetch, API fallback, sync
+│   ├── BookingService.php       # Seat locking, transaction, booking creation
+│   ├── MovieService.php         # DB-first fetch with API fallback
+│   ├── Payment/
+│   │   ├── Contracts/PaymentGatewayInterface.php
+│   │   ├── RazorpayService.php  # Implements PaymentGatewayInterface
+│   │   └── PaymentService.php   # Order creation and webhook confirmation
 │   └── ExternalApi/
-│       ├── Contracts/           # MovieApiInterface
-│       └── Http/                # ApiClient (retry + backoff), ApiAuthenticator
+│       ├── Contracts/MovieApiInterface.php
+│       ├── Http/ApiClient.php   # Retry, backoff, rate-limit handling
+│       └── TmdbApiService.php
 └── Traits/
-    └── ApiResponse.php          # Standardised JSON response methods
+    └── ApiResponse.php          # Standardised JSON envelope across all controllers
 ```
-
-**Repository pattern:** All data access goes through repository interfaces bound to concrete implementations in `AppServiceProvider`. Controllers and services depend on interfaces, not Eloquent directly — keeping the data layer swappable and independently testable.
-
-**DTO for external data:** `MovieDTO` is a `readonly` class that maps raw TMDB API responses to a typed internal structure. It is the single point of TMDB field name knowledge — services and jobs all go through `MovieDTO::fromTmdb()` rather than accessing raw array keys.
-
-**Standardised API responses:** The `ApiResponse` trait provides `success()`, `paginated()`, `created()`, `noContent()`, `error()`, and `notFound()` methods used consistently across all controllers.
-
-**Centralised exception handling:** `bootstrap/app.php` registers render handlers for `AuthenticationException`, `UnauthorizedException` (Spatie), `ModelNotFoundException`, `NotFoundHttpException`, and `MethodNotAllowedHttpException` — each returning a typed JSON response with the appropriate HTTP status code.
 
 ---
 
 ## Database Schema
 
-Seven migrations establish the following tables:
+12 tables across the full booking and payment lifecycle:
 
-| Table | Key Columns | Notes |
-|---|---|---|
-| `users` | `name`, `email`, `password` | Standard Laravel auth table |
-| `movies` | `external_id` (unique), `title`, `poster`, `release_date`, `genres` (JSON), `rating`, `original_language` | `external_id` maps to TMDB's ID; used as FK in `movie_shows` |
-| `theaters` | `code` (4-char unique), `name`, `address`, `status` | `deleted_at` added via separate migration |
-| `screens` | `theater_id` (FK), `type` (tinyint), `capacity`, `status` | `SoftDeletes` trait; FK to `theaters` |
-| `movie_shows` | `movie_id` (FK → `movies.external_id`), `theater_id` (FK), `screen_id` (FK), `duration` | Links a movie to a specific screen at a theater |
-| `jobs` / `cache` | Laravel defaults | Used by the database queue and cache drivers |
-| `permission_tables` | roles, permissions, model_has_roles, etc. | Generated by Spatie Laravel Permission |
+| Table | Purpose |
+|---|---|
+| `users` | Authentication, Spatie role assignment |
+| `movies` | TMDB-sourced data, synced periodically via background job |
+| `theaters` | Physical locations with soft deletes |
+| `theater_owners` | Pivot — assigns owners to theaters, stores `assigned_by` for audit |
+| `screens` | Screens within a theater (type, capacity) with soft deletes |
+| `seats` | Individual seats per screen (row, number, type) with soft deletes |
+| `movie_shows` | A movie scheduled on a screen at a specific time, with overlap detection |
+| `show_seats` | Availability matrix — one row per seat per show |
+| `bookings` | Booking record per user with full status lifecycle |
+| `booking_seats` | Line items — seats per booking with price snapshot at time of booking |
+| `payments` | Payment attempts with Razorpay order/payment IDs and raw webhook response |
+| `jobs` / `cache` | Laravel queue and cache drivers |
 
-**Model relationships:**
-- `Theater` → `hasMany` Screens, `hasManyThrough` MovieShows
-- `Screen` → `belongsTo` Theater, `hasMany` MovieShows
-- `MovieShow` → `belongsTo` Movie, Theater, Screen
+**Status lifecycles:**
 
----
-
-## API Design
-
-All application routes are in `routes/api.php`. Role access is enforced at the route group level; granular CRUD actions are further gated by named permissions.
-
-**Public routes:**
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/login` | Authenticate and receive a Sanctum token |
-| `POST` | `/api/logout` | Revoke the current token (`auth:sanctum` required) |
-
-**Protected routes — prefix `/api/v1`** (all require `auth:sanctum`):
-
-| Resource | `admin` | `owner` | `user` |
-|---|---|---|---|
-| Theater | Full CRUD | Create + Read + Update | Read |
-| Screen | Full CRUD | Full CRUD | Read |
-| Movie Show | Full CRUD | Full CRUD | Read |
-| Movies | Read | Read | Read |
-
-Movie endpoints available to all authenticated roles:
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `.../movies/latest` | Paginated movies released this year |
-| `GET` | `.../movies/upcoming` | Upcoming movies (DB first, TMDB fallback) |
-| `GET` | `.../movies/search?query=` | Search by title or overview |
-| `GET` | `.../movies/{id}` | Single movie by TMDB external ID |
-
-All paginated responses include a `meta` block (`current_page`, `last_page`, `per_page`, `total`) and a `links` block (`first`, `last`, `prev`, `next`).
-
----
-
-## Authentication & Authorization
-
-**Authentication** uses Laravel Sanctum. On login, a personal access token is issued and must be sent as a `Bearer` token on all protected requests. Logout deletes the current token.
-
-**Authorization** uses three roles seeded by `UserSeeder`:
-
-- `admin` — full permissions across all resources
-- `owner` (theater owner) — manages theaters, screens, and showtimes; can create movies
-- `user` — read-only access to all resources
-
-Permissions follow a `{Action} {Resource}` naming convention (e.g. `Create Theater`, `Delete Screen`). Roles are assigned permissions via `syncPermissions()` in the seeder. Route-level checks use Spatie's `role:` and `permission:` middleware aliases, registered in `bootstrap/app.php`.
-
----
-
-## TMDB Integration & Movie Sync
-
-Movie data is sourced from [TMDB](https://www.themoviedb.org/). The integration is structured behind a `MovieApiInterface`, implemented by `TmdbApiService`, with all HTTP transport going through a shared `ApiClient`.
-
-**`ApiClient` features:**
-- **Retry with exponential backoff** on connection failures — up to 3 attempts, 500ms base delay doubling per attempt
-- **Auth token refresh** — attempts one token refresh on a 401 before rethrowing as `ApiAuthException`
-- **Rate limit handling** — raises `ApiRateLimitException` with a `retryAfterMs` field parsed from the `Retry-After` response header
-- Three typed exceptions: `ApiAuthException`, `ApiConnectionException`, `ApiRateLimitException`
-
-**`MovieService` fetch strategy:**
-- **Single movie:** DB-first. Returns cached data if not stale (default threshold: 24 hours via `synced_at`). Re-syncs from TMDB if stale or missing. Serves stale data on API failure; throws `RuntimeException` only when both DB and API are unavailable.
-- **Listings (latest, upcoming, popular, now playing):** DB-first. Triggers a live TMDB fetch and upsert only when the DB result is empty.
-- **Search:** DB only — assumes data is pre-populated by the background job.
-
-**`FetchUpcomingMoviesJob`:**
-A queued job (`ShouldQueue`) that paginates through TMDB's `/movie/upcoming` endpoint and upserts results using `MovieDTO` and `MovieRepository`. Accepts a `languageCode` at construction and is scheduled every five minutes for English and Hindi:
-
-```php
-Schedule::job(new FetchUpcomingMoviesJob(config('services.language_code.english')))->everyFiveMinutes();
-Schedule::job(new FetchUpcomingMoviesJob(config('services.language_code.hindi')))->everyFiveMinutes();
+```
+show_seats:    available → locked → booked
+bookings:      pending → reserved → payment_pending → confirmed / failed / cancelled
+booking_seats: pending → confirmed / cancelled
+payments:      initiated → captured / failed / refunded
 ```
 
-Per-movie failures are caught and logged individually — a single bad record does not abort the batch.
+---
+
+## API Reference
+
+### Public (no authentication required)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/register` | Create account, receive Sanctum token |
+| `POST` | `/api/login` | Authenticate, receive Sanctum token |
+| `POST` | `/api/webhooks/razorpay` | Razorpay webhook receiver — HMAC-SHA256 verified |
+| `GET` | `/api/movies/latest` | Paginated latest movies |
+| `GET` | `/api/movies/upcoming` | Upcoming movies |
+| `GET` | `/api/movies/search?query=` | Search by title |
+| `GET` | `/api/movies/{id}` | Single movie by TMDB ID |
+
+### Authenticated — all roles (`auth:sanctum`)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/logout` | Revoke current token |
+| `GET` | `/api/v1/user` | Authenticated user profile |
+| `GET` | `/api/v1/shows` | List movie shows |
+| `GET` | `/api/v1/shows/{show}` | Show detail |
+| `GET` | `/api/v1/shows/{show}/seats` | Real-time seat availability |
+| `GET` | `/api/v1/theater` | List theaters |
+
+### User role
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/bookings` | My bookings |
+| `POST` | `/api/v1/bookings/confirm` | Create booking — locks selected seats |
+| `GET` | `/api/v1/bookings/{booking}` | Booking detail |
+| `DELETE` | `/api/v1/bookings/{booking}/cancel` | Cancel booking |
+| `POST` | `/api/v1/payments/initiate` | Create Razorpay order for a booking |
+| `POST` | `/api/v1/payments/verify` | Verify frontend payment signature |
+
+### Admin role — prefix `/api/v1/admin`
+
+| Resource | Endpoints |
+|---|---|
+| Theaters | Full CRUD — `/admin/theaters` |
+| Screens | Full CRUD — `/admin/theaters/{theater}/screens` |
+| Seats | Full CRUD — `/admin/theaters/{theater}/screens/{screen}/seats` |
+| Movie Shows | Full CRUD — `/admin/theaters/{theater}/movie-shows` |
+| Theater Owners | Assign / revoke — `/admin/theaters/{theater}/owners` |
+
+### Owner role — prefix `/api/v1/owner`
+
+| Resource | Endpoints |
+|---|---|
+| Theaters | Read + Update — `/owner/theaters` |
+| Screens | Full CRUD — `/owner/theaters/{theater}/screens` |
+| Seats | Full CRUD — `/owner/theaters/{theater}/screens/{screen}/seats` |
+| Movie Shows | Full CRUD — `/owner/theaters/{theater}/screens/{screen}/movie-shows` |
+
+All paginated responses include `meta` (current_page, last_page, per_page, total) and `links` (first, last, prev, next).
 
 ---
 
-## Testing
+## Key Engineering Decisions
 
-PHPUnit `^11` with a real PostgreSQL test database. Tests use `RefreshDatabase` to reset state between runs.
+### 1. Concurrent booking prevention with pessimistic locking
 
-**`tests/Feature/AuthTest`**
-- Valid credentials return a 200 with a Sanctum token
-- An authenticated user with the `admin` role can access a protected route
+Two users selecting the same seat simultaneously is a genuine race condition. An availability check followed by a write is not enough — both requests can pass the check before either writes.
 
-**`tests/Unit/FetchUpcomingMoviesJobTest`**
-- `MovieDTO::fromTmdb()` maps TMDB fields to the correct DTO properties
-- Job upserts all movies from a paginated API response into the database
-- Job stops cleanly when the API returns an empty results array
-- A malformed movie (null title) is skipped and logged; the remaining batch still saves
-- The `languageCode` passed to the job's constructor flows through correctly to the API call
+`BookingService` wraps seat selection in `DB::transaction()` with `lockForUpdate()` on the targeted `show_seats` rows. The database holds an exclusive row lock until the transaction commits. A concurrent request blocks, waits, then re-reads the status and throws `SeatUnavailableException` if the seat is no longer available. This is enforced at the database level, not the application level.
 
-Mockery is used to mock `MovieApiInterface` in job tests. The real `MovieRepository` is resolved from the container, giving the job tests both isolation (mocked API) and integration coverage (real DB assertions).
+MySQL 8 is a deliberate requirement for this reason — SQLite ignores `FOR UPDATE` entirely, making the lock a no-op.
 
 ---
 
-## Installation & Setup
+### 2. Async seat population via Observer and Job
 
-**Requirements:** PHP >= 8.2, Composer, Node.js + npm, PostgreSQL
+When a show is created, one `show_seat` row must be inserted for every active seat in that screen. Doing this synchronously blocks the HTTP response and fails atomically for all seats if anything goes wrong mid-insert.
+
+`MovieShowObserver::created()` dispatches `PopulateShowSeatsJob` immediately and returns. The response is instant. The job runs on the queue worker and uses a single bulk `insertOrIgnore()` for all seats in one query — regardless of screen capacity.
+
+`insertOrIgnore()` makes the job idempotent: if the queue retries after a timeout, rows that already exist are silently skipped rather than throwing a constraint violation.
+
+The observer is registered via the `#[ObservedBy]` attribute on `MovieShow` — any code path that creates a show triggers seat population automatically, with no controller changes required.
+
+---
+
+### 3. Payment gateway behind an interface
+
+`PaymentService` and controllers depend on `PaymentGatewayInterface`, not `RazorpayService` directly. The interface defines: `createOrder()`, `verifySignature()`, `verifyPaymentSignature()`.
+
+Two immediate practical benefits: tests inject a fake implementation with no real Razorpay calls, and the gateway is swappable — adding a second payment provider means writing one new class and changing one line in `AppServiceProvider`.
+
+---
+
+### 4. Webhook as the authoritative payment confirmation
+
+The Razorpay checkout produces two signals: a frontend callback after the modal closes, and a server-to-server webhook. The frontend callback can be forged. The webhook is signed with HMAC-SHA256 using a secret only Razorpay and your server hold.
+
+`WebhookController` reads the raw request body with `$request->getContent()` before any parsing — re-encoding JSON can change byte order, breaking the signature. Verification uses `hash_equals()` for constant-time comparison, preventing timing attacks.
+
+`PaymentService::confirmFromWebhook()` is idempotent — Razorpay's at-least-once delivery guarantee means the same event will arrive more than once. The second call detects `status === captured` and returns without writing.
+
+---
+
+### 5. Policy-based authorization with clean ownership traversal
+
+All owner-facing policies extend `OwnerPolicy`, which holds a single `ownsTheater(User $user, Theater $theater): bool` method. Each policy traverses its model's relationships to reach the theater — `$screen->theater`, `$seat->screen->theater`, `$movieShow->screen->theater` — rather than reading from `request()->route()`.
+
+This keeps policies testable outside HTTP context. `Gate::allows('update', $screen)` works identically in a controller, a job, or a test. `Screen` declares `protected $with = ['theater']`, so the traversal in `ScreenPolicy` fires zero additional queries.
+
+---
+
+### 6. TMDB integration with typed exceptions and DB-first strategy
+
+`ApiClient` wraps all HTTP calls with typed exceptions: `ApiAuthException` (do not retry), `ApiConnectionException` (retry with backoff), `ApiRateLimitException` (carries `retryAfterMs` from the `Retry-After` header).
+
+`MovieService` uses DB-first: return cached data if fresh, refetch if stale, serve stale data on API failure, only throw when both sources are unavailable. TMDB downtime does not take down the movie listing.
+
+`MovieDTO` is the single boundary between TMDB and the application. Every TMDB field name appears once, in `MovieDTO::fromTmdb()`. If TMDB renames a field, one line changes.
+
+---
+
+## Installation
+
+The API is available at `http://localhost/api`.
+
+**Without Docker (requires local MySQL):**
 
 ```bash
-git clone https://github.com/M-dev-acc/movie-ticket-booking-platform.git
-cd movie-ticket-booking-platform
-
 composer install
-npm install
-
 cp .env.example .env
+# Configure DB_* variables for your local MySQL instance
 php artisan key:generate
+php artisan migrate --seed
 
-# Set DB_* and TMDB credentials in .env
-php artisan migrate
-php artisan db:seed
-
-# Starts server, queue worker, log tailer, and Vite concurrently
-composer dev
+# Run in separate terminals:
+php artisan serve
+php artisan queue:work
+php artisan schedule:work
 ```
 
-To run tests:
+**Production scheduler** — add one cron entry on the server:
+
+```
+* * * * * php artisan schedule:run
+```
+
+This single entry manages all scheduled jobs: TMDB sync and seat lock release.
+
+---
+
+## Environment Variables
+
+```env
+APP_KEY=                        # Run: php artisan key:generate
+APP_ENV=local                   # Set to 'production' on the server
+APP_DEBUG=false                 # Must be false in production
+
+# Database — use service name 'mysql' when running via Docker
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_DATABASE=movie_booking
+DB_USERNAME=laravel
+DB_PASSWORD=secret
+
+QUEUE_CONNECTION=database
+
+# TMDB — themoviedb.org → Settings → API
+TMDB_API_KEY=
+TMDB_BASE_URL=https://api.themoviedb.org/3
+
+# Razorpay API keys — dashboard.razorpay.com → Settings → API Keys
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+# Razorpay webhook secret — dashboard.razorpay.com → Settings → Webhooks
+RAZORPAY_WEBHOOK_SECRET=
+
+MAIL_MAILER=log                 # Change to 'resend' or SMTP for production
+```
+
+---
+
+## Running Tests
 
 ```bash
-cp .env.testing.example .env.testing
-# Configure a separate PostgreSQL database in .env.testing
 php artisan test
 ```
 
----
-
-## Environment Configuration
-
-| Variable | Description |
+| Test class | Coverage |
 |---|---|
-| `DB_CONNECTION` | Set to `pgsql` |
-| `DB_HOST` / `DB_PORT` / `DB_DATABASE` | PostgreSQL connection details |
-| `DB_USERNAME` / `DB_PASSWORD` | PostgreSQL credentials |
-| `QUEUE_CONNECTION` | `database` — jobs are stored in the DB |
-| `TMDB_API_KEY` | TMDB bearer token (referenced in `config/services.php`) |
-| `TMDB_BASE_URL` | TMDB API base URL |
+| `AuthTest` | Login returns token; unauthenticated requests are rejected |
+| `FetchUpcomingMoviesJobTest` | DTO field mapping; batch upsert; empty page stops gracefully; malformed movie skipped without aborting batch; language code flows to API call |
 
-The `.env.testing.example` sets `DB_PORT=5433` by default to allow a separate PostgreSQL instance for tests.
+`FetchUpcomingMoviesJobTest` stubs `MovieApiInterface` with Mockery and asserts against a real database — giving isolation from the HTTP layer and integration coverage of the repository and job.
 
 ---
 
-## Project Status
+## Seeded Test Accounts
 
-### ✅ Completed
+After `php artisan migrate --seed`:
 
-- [x] Laravel 11 project with PostgreSQL as primary database
-- [x] Sanctum token-based authentication (login / logout)
-- [x] Role-based access control: `admin`, `owner`, `user` with granular Spatie permissions
-- [x] Database schema: `movies`, `theaters`, `screens`, `movie_shows` with FK constraints and model relationships
-- [x] Theater, Screen, and MovieShow CRUD APIs with role + permission gating
-- [x] Movie read API: latest, upcoming, search, single detail
-- [x] TMDB API integration: typed exceptions, retry with exponential backoff, auth refresh
-- [x] `MovieService` with DB-first / API-fallback / stale-data logic
-- [x] `MovieDTO` — immutable, typed TMDB response mapping
-- [x] Repository pattern with interface bindings in IoC container
-- [x] `FetchUpcomingMoviesJob` — paginated sync, multi-language, per-item error isolation
-- [x] `ApiResponse` trait for consistent JSON envelopes across all controllers
-- [x] Global exception handler for 401, 403, 404, 405 errors
-- [x] `UserSeeder` with roles, permissions, and seed users
-- [x] Feature tests: authentication and protected route access
-- [x] Job tests: DTO mapping, batch upsert, error isolation, language passthrough
-
-### 🔄 In Progress / Known Issues
-
-- [ ] Permission name mismatch: routes use `Update Theater` / `Update Screen` but seeder registers `Edit Theater` / `Edit Screen`
-- [ ] `FetchUpcomingMoviesJobTest` lives in `tests/Unit/` but uses `RefreshDatabase` — should be in `tests/Feature/`
-- [ ] `MovieRepository::findByExternalId` queries a `uniqueid` column that the migration defines as `external_id`
-
-### 📋 Planned
-
-- [ ] Booking flow: seat selection → reservation → confirmation
-- [ ] Seat management model and availability tracking
-- [ ] Employee module
-- [ ] Vue 3 SPA frontend
-- [ ] Payment gateway integration
-- [ ] AI-powered movie recommendation feature
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@example.com | password |
+| Owner | owner@example.com | password |
+| User | user@example.com | password |
