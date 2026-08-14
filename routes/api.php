@@ -6,11 +6,14 @@ use App\Http\Controllers\{
     MovieController,
     MovieShowController,
     PaymentController,
-    ScreenController,
     TheaterController,
+    UserRegistrationController,
     WebhookController,
 };
 use Illuminate\Support\Facades\Route;
+
+Route::post('/register', UserRegistrationController::class);
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
 Route::post('/webhooks/razorpay', WebhookController::class);
 
@@ -23,8 +26,6 @@ Route::controller(MovieController::class)
         Route::get('/{id}', [MovieController::class, 'show'])
         ->whereNumber('id');
     });
-
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
 Route::group([
     'middleware' => "auth:sanctum",
