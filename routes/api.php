@@ -6,6 +6,7 @@ use App\Http\Controllers\{
     MovieController,
     MovieShowController,
     PaymentController,
+    SeatController,
     TheaterController,
     UserRegistrationController,
     WebhookController,
@@ -68,6 +69,13 @@ Route::group([
                 Route::get('/', 'index');
                 Route::get('/{movie_show}', 'show')
                     ->middleware('permission:Read Movie Show');
+            });
+
+        Route::controller(SeatController::class)
+            ->prefix('shows/{movie_show}/seats')
+            ->scopeBindings()
+            ->group(function () {
+                Route::get('/', 'index');
             });
 
         Route::controller(BookingController::class)
