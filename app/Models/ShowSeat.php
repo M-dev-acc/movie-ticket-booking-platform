@@ -31,6 +31,10 @@ class ShowSeat extends Model
         'locked_until' => 'datetime',
     ];
 
+    protected $with = [
+        'seat'
+    ];
+
     /*
     |--------------------------------------------------------------------------
     | Relationships
@@ -42,9 +46,9 @@ class ShowSeat extends Model
         return $this->belongsTo(MovieShow::class);
     }
 
-    public function seats(): HasMany
+    public function seat(): BelongsTo
     {
-        return $this->hasMany(Seat::class);
+        return $this->belongsTo(Seat::class);
     }
 
     /*
@@ -60,7 +64,7 @@ class ShowSeat extends Model
                 ->whereNull('locked_until');
         });
     }
-    
+
     public function scopeLocked(Builder $query): Builder
     {
         return $query->where(function (Builder $query): Builder {

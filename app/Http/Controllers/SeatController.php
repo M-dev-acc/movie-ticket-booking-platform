@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\Seat\SeatResource;
+use App\Http\Resources\MovieShowSeatResource;
 use App\Models\MovieShow;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +18,7 @@ class SeatController extends Controller
             paginator: $movieShow->seats()
                 ->paginate(),
             message: "Show's seat",
-            resourceClass: SeatResource::class,
+            resourceClass: MovieShowSeatResource::class,
         );
     }
 }

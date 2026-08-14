@@ -1,14 +1,11 @@
 <?php
 
-namespace App\Http\Resources\MovieShow;
+namespace App\Http\Resources;
 
-use App\Http\Resources\MovieResource;
-use App\Http\Resources\Screen\ScreenResource;
-use App\Http\Resources\Theater\TheaterResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class MovieShowResource extends JsonResource
+class MovieShowSeatResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,13 +14,15 @@ class MovieShowResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $parentSeat = $this->seat;
         return [
             "id" => $this->id,
-            "screen_id" => $this->screen_id,
-            "row" => $this->row,
-            "number" => $this->number,
-            "type" => $this->type,
-            "is_active" => $this->is_active,
+            "screen_id" => $parentSeat->screen_id,
+            "row" => $parentSeat->row,
+            "number" => $parentSeat->number,
+            "type" => $parentSeat->type,
+            "status" => $this->status,
+            "price" => $this->price,
             "created_at" => $this->created_at->toIso8601String(),
             "updated_at" => $this->updated_at->toIso8601String(),
         ];

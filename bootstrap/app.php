@@ -77,9 +77,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AccessDeniedHttpException $exception) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthenticated. Mere angane mai tumhara kya kam hai?',
+                'message' => 'Access denied',
                 'errors'  => null,
-            ], 401);
+            ], 403);
         });
 
         // ── 404 Model not found ──────────────────────────────────────────────
